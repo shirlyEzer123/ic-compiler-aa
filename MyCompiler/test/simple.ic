@@ -1,0 +1,11 @@
+// Simple IC program for testing
+
+class C {
+	void foo(int arg, C differentArg) {
+		x = 1;
+		int y;
+		while ( x == 5 )
+			print(3);
+		return expr;
+	}
+}
