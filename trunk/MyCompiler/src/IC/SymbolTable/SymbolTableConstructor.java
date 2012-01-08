@@ -42,6 +42,7 @@ import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.While;
 import IC.SemanticChecks.SemanticError;
+import IC.Types.MethodType;
 import IC.Types.Type;
 import IC.Types.TypeTable;
 
@@ -91,7 +92,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(ICClass icClass) {
-		SymbolTable table = new SymbolTable(icClass.getName() + "_sym");
+		SymbolTable table = new SymbolTable(icClass.getName());
 		getCurrentTable().getChilds().add(table);
 		table.setParentSymbolTable(getCurrentTable());
 		setCurrentTable(table);
@@ -111,7 +112,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		Symbol fSymbol = null;
 		try {
 			fSymbol = new Symbol(field.getName(), TypeTable.astType(field.getType()), Kind.FIELD);
-			currentTable.insertSymbol(fSymbol);		
+			getCurrentTable().insertSymbol(fSymbol);		
 		} catch (SemanticError e) {
 			errorHandler(e);
 		}
@@ -120,13 +121,22 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(VirtualMethod method) {
-		SymbolTable table = new SymbolTable(method.getName() + "_sym");
+		Symbol fSymbol = null;
+		try {
+			Type mt = TypeTable.astType(method.getType());
+			//TODO: above line should get a MethodType and insert it into symbol
+			fSymbol = new Symbol(method.getName(), mt, Kind.METHOD);
+			getCurrentTable().insertSymbol(fSymbol);		
+		} catch (SemanticError e) {
+			errorHandler(e);
+		}
+		SymbolTable table = new SymbolTable(method.getName());
 		method.setEnclosingScope(table);
 		getCurrentTable().getChilds().add(table);
 		table.setParentSymbolTable(currentTable);
 		setCurrentTable(table);
-		String thisTypeName = table.getParentSymbolTable().getId().subSequence(0, 
-				table.getParentSymbolTable().getId().length() - 4).toString();
+		String thisTypeName = table.getParentSymbolTable().getId();/*.subSequence(0, 
+				table.getParentSymbolTable().getId().length() - 4).toString();*/
 		Type thisType;
 		try {
 			thisType = TypeTable.getUserType(thisTypeName);
@@ -147,7 +157,15 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(StaticMethod method) {
-		SymbolTable table = new SymbolTable(method.getName() + "_sym");
+		Symbol fSymbol = null;
+		try {
+			fSymbol = new Symbol(method.getName(), TypeTable.astType(method.getType()), Kind.METHOD);
+			fSymbol.setStatic(true);
+			getCurrentTable().insertSymbol(fSymbol);		
+		} catch (SemanticError e) {
+			errorHandler(e);
+		}
+		SymbolTable table = new SymbolTable(method.getName());
 		method.setEnclosingScope(table);
 		getCurrentTable().getChilds().add(table);
 		table.setParentSymbolTable(getGlobal());
@@ -257,7 +275,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(StatementsBlock statementsBlock) {
-		SymbolTable table = new SymbolTable(currentTable.getId() +"sub_block_" + (++annonymousBlocks ) + "_sym");
+		SymbolTable table = new SymbolTable(currentTable.getId() +"sub_block_" + (++annonymousBlocks ));
 		statementsBlock.setEnclosingScope(table);
 		getCurrentTable().getChilds().add(table);
 		table.setParentSymbolTable(currentTable);

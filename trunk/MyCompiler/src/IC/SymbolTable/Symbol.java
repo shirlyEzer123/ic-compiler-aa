@@ -12,8 +12,8 @@ public class Symbol {
 	public Symbol(String id, Type type, Kind kind) {
 		super();
 		this.id = id;
-		this.type = type;
-		this.kind = kind;
+		this.setType(type);
+		this.setKind(kind);
 	}
 
 	
@@ -39,5 +39,25 @@ public class Symbol {
 
 	public void setStatic(boolean isStatic) {
 		this.isStatic = isStatic;
+	}
+
+
+	public Kind getKind() {
+		return kind;
+	}
+
+
+	public void setKind(Kind kind) {
+		this.kind = kind;
+	}
+
+
+	public Type getType() {
+		return type;
+	}
+
+
+	public void setType(Type type) {
+		this.type = type;
 	}
 }
