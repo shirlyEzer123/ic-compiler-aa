@@ -83,13 +83,14 @@ public class Compiler {
 		try {
 			Symbol parseSymbol = parser.parse();
 			System.out.println("Parsed " + args[0] + " successfully!");
+			System.out.println("");
 			if ( printAST ) {
 				Program root = (Program) parseSymbol.value;
 				//PrettyPrinter printer = new PrettyPrinter(args[0]);
 				//System.out.println( printer.visit(root) );
 				SymbolTableConstructor stc = new SymbolTableConstructor();
 				SymbolTable st = (SymbolTable) stc.visit(root);
-				System.out.println(st);
+				st.printSymbolTable(st, args[0]);
 			}			
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());

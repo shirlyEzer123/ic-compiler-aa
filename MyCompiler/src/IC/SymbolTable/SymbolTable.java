@@ -57,4 +57,72 @@ public class SymbolTable {
 		return childs;
 	}
 
+	public void printSymbolTable(SymbolTable st, String libFileName) {
+		if(st.id == "Global"){
+			System.out.println("Global Symbol Table: " + libFileName);
+			for(String e : entries.keySet()){
+				System.out.println("\tClass: " + e);
+			}
+			System.out.print("Children tables: ");
+			for(SymbolTable syta : childs){
+				System.out.print(syta.id + ", ");
+			}
+			System.out.println("");
+			System.out.println();
+		}
+		for(SymbolTable syta : st.childs){
+			printTableName(syta);
+			printFields(syta);
+			printStaticMethods(syta);
+			printVirtualMethods(syta);
+			printChildrenTables(syta);
+		}
+		
+		
+	}
+
+	private void printChildrenTables(SymbolTable syta) {
+		System.out.print("Children tables: ");
+		for(SymbolTable s : syta.childs) {
+			System.out.print(s.id + ", ");
+		}
+		System.out.println("");
+		System.out.println("");
+		for(SymbolTable s : syta.childs) {
+			printSymbolTable(s, "");
+		}
+		
+	}
+
+	private void printVirtualMethods(SymbolTable syta) {
+		for(Symbol s : syta.entries.values()){
+			if(s.getKind() == Kind.METHOD && !s.isStatic() ){
+				System.out.println("\tVirtual method: " + s.getId());
+				
+			}
+		}	
+	}
+
+	private void printStaticMethods(SymbolTable syta) {
+		for(Symbol s : syta.entries.values()){
+			if(s.getKind() == Kind.METHOD && s.isStatic() ){
+				System.out.println("\tStatic method: " + s.getId());
+				
+			}
+		}	
+	}
+
+	private void printFields(SymbolTable syta) {
+		for(Symbol s : syta.entries.values()){
+			if(s.getKind() == Kind.FIELD){
+				System.out.println("\tField: " + s.getId());
+			}
+		}	
+	}
+
+	private void printTableName(SymbolTable syta) {
+		System.out.println("Class Symbol Table: " + syta.id);
+	}
+	
+
 }
