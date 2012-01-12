@@ -8,6 +8,7 @@ public class Symbol {
 	private Kind kind;
 	private boolean isStatic = false;
 	private boolean unresolved = false;
+	private SymbolTable relatedSymTab = null;
 	
 	public Symbol(String id, Type type, Kind kind) {
 		super();
@@ -59,5 +60,15 @@ public class Symbol {
 
 	public void setType(Type type) {
 		this.type = type;
+	}
+
+
+	public SymbolTable getRelatedSymTab() {
+		return relatedSymTab ;
+	}
+
+
+	public void setRelatedSymTab(SymbolTable relatedSymTab) {
+		this.relatedSymTab = relatedSymTab;
 	}
 }

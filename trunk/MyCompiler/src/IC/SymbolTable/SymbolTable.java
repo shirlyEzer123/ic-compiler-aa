@@ -1,6 +1,7 @@
 package IC.SymbolTable;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +14,12 @@ public class SymbolTable {
 	  private String id;
 	  private SymbolTable parentSymbolTable;
 	  private List<SymbolTable> childs = new LinkedList<>(); 
+	  private Kind kind;
 	  
-	  public SymbolTable(String id) {
+	  public SymbolTable(String id, Kind kind) {
 	    this.setId(id);
 	    entries = new HashMap<String,Symbol>();
+	    setKind(kind);
 	  }
 	  
 	  public void insertSymbol(Symbol sym) throws SemanticError{
@@ -57,15 +60,20 @@ public class SymbolTable {
 		return childs;
 	}
 
-	public void printSymbolTable(SymbolTable st, String libFileName) {
+
+	public void printSymbolTable(String name, SymbolTable st, String libFileName) {
+		//System.out.print(name +" Symbol Table");
 		if(st.id == "Global"){
 			System.out.println("Global Symbol Table: " + libFileName);
 			for(String e : entries.keySet()){
 				System.out.println("\tClass: " + e);
 			}
 			System.out.print("Children tables: ");
-			for(SymbolTable syta : childs){
-				System.out.print(syta.id + ", ");
+			for ( Iterator<SymbolTable> iter = childs.iterator(); iter.hasNext(); ){
+				SymbolTable syta = iter.next();
+				System.out.print(syta.id);
+				if ( iter.hasNext() )
+					System.out.print(", ");
 			}
 			System.out.println("");
 			System.out.println();
@@ -75,53 +83,98 @@ public class SymbolTable {
 			printFields(syta);
 			printStaticMethods(syta);
 			printVirtualMethods(syta);
+			printParameters(syta);
+			printLocalVariables(syta);
 			printChildrenTables(syta);
+			
+			
 		}
 		
+		for ( Iterator<SymbolTable> iter = st.childs.iterator(); iter.hasNext(); ){
+			SymbolTable syta = iter.next();
+			printSymbolTable(syta.getId(), syta, null);
+		}
 		
 	}
 
-	private void printChildrenTables(SymbolTable syta) {
+	private void printLocalVariables(SymbolTable syta) {
+		for(Symbol s : syta.entries.values()){
+			if(s.getKind() == Kind.VARIABLE){
+				System.out.println("\tLocal variable: " + s.getType() + " " + s.getId());
+			}
+		}	
+	}
+
+	private void printParameters(SymbolTable syta) {
+		for(Symbol s : syta.entries.values()){
+			if(s.getKind() == Kind.PARAMETER){
+				System.out.println("\tParameter: " + s.getType() + " " + s.getId());
+			}
+		}	
+		
+	}
+
+	private static void printChildrenTables(SymbolTable syta) {
 		System.out.print("Children tables: ");
-		for(SymbolTable s : syta.childs) {
-			System.out.print(s.id + ", ");
+		for ( Iterator<SymbolTable> iter = syta.childs.iterator(); iter.hasNext(); ){
+			SymbolTable syta1 = iter.next();
+			System.out.print(syta1.id);
+			if ( iter.hasNext() )
+				System.out.print(", ");
 		}
-		System.out.println("");
-		System.out.println("");
-		for(SymbolTable s : syta.childs) {
-			printSymbolTable(s, "");
-		}
-		
+		System.out.println("\n");		
 	}
 
-	private void printVirtualMethods(SymbolTable syta) {
+	private static void printVirtualMethods(SymbolTable syta) {
 		for(Symbol s : syta.entries.values()){
 			if(s.getKind() == Kind.METHOD && !s.isStatic() ){
-				System.out.println("\tVirtual method: " + s.getId());
+				System.out.println("\tVirtual method: " + s.getId() + " {" + s.getType() + "}");
 				
 			}
 		}	
 	}
 
-	private void printStaticMethods(SymbolTable syta) {
+	private static void printStaticMethods(SymbolTable syta) {
 		for(Symbol s : syta.entries.values()){
 			if(s.getKind() == Kind.METHOD && s.isStatic() ){
-				System.out.println("\tStatic method: " + s.getId());
+				System.out.println("\tStatic method: " + s.getId() + " {" + s.getType() + "}");
 				
 			}
 		}	
 	}
 
-	private void printFields(SymbolTable syta) {
+	private static void printFields(SymbolTable syta) {
 		for(Symbol s : syta.entries.values()){
 			if(s.getKind() == Kind.FIELD){
-				System.out.println("\tField: " + s.getId());
+				System.out.println("\tField: " + s.getType() + " " + s.getId());
 			}
 		}	
 	}
 
 	private void printTableName(SymbolTable syta) {
-		System.out.println("Class Symbol Table: " + syta.id);
+		switch (syta.getKind()){
+		case CLASS:
+			System.out.println("Class Symbol Table: " + syta.id);
+			break;
+		case BLOCK:
+			System.out.println("Statement Block Symbol Table ( located in "
+					+ syta.getParentSymbolTable().getId() + " )");
+			break;
+		case METHOD:
+			System.out.println("Method Symbol Table: " + syta.id);
+			break;
+		default:
+			break;
+		}
+		
+	}
+
+	public Kind getKind() {
+		return kind;
+	}
+
+	public void setKind(Kind kind) {
+		this.kind = kind;
 	}
 	
 
