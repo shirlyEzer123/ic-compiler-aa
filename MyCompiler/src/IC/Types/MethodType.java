@@ -39,7 +39,7 @@ public class MethodType extends Type {
 			str += ps[ps.length-1].toString();
 		}
 			
-		str += "->" + returnType.toString();
+		str += " -> " + returnType.toString();
 		
 		return str;
 	}

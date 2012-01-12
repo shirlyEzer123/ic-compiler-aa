@@ -2,6 +2,8 @@ package IC.AST;
 
 import java.util.List;
 
+import IC.ICVoid;
+
 /**
  * Root AST node for an IC program.
  * 
@@ -10,6 +12,7 @@ import java.util.List;
 public class Program extends ASTNode {
 
 	private List<ICClass> classes;
+	private Library library = null;
 
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
@@ -28,6 +31,14 @@ public class Program extends ASTNode {
 
 	public List<ICClass> getClasses() {
 		return classes;
+	}
+
+	public void setLibrary(Library libRoot) {
+		this.library  = libRoot;
+	}
+
+	public Library getLibrary() {
+		return library;
 	}
 
 }

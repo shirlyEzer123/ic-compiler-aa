@@ -82,6 +82,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			}
 			classSymbol.setRelatedSymTab((SymbolTable) c.accept(this));
 		}
+		program.getLibrary().accept(this);
 		return globalTable;
 	}
 
@@ -113,6 +114,27 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		setCurrentTable(table.getParentSymbolTable());
 		return table;
 	}
+
+	@Override
+	public Object visit(Library library) {
+		SymbolTable table = new SymbolTable("Library", Kind.CLASS);
+		try{
+			getGlobal().lookup("Library");
+			errorHandler(new SemanticError("Can't override Library class"));
+		} catch ( SemanticError e ) {
+			// All is well with the world. :)
+		}
+		getGlobal().getChilds().add(table);
+		table.setParentSymbolTable(getGlobal());
+		setCurrentTable(table);
+		library.setEnclosingScope(table);
+		for ( LibraryMethod m : library.getMethodList() ){
+			m.accept(this);
+		}
+		setCurrentTable(table.getParentSymbolTable());
+		return table;
+	}
+
 
 	@Override
 	public Object visit(Field field) {
@@ -193,8 +215,27 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(LibraryMethod method) {
-		// TODO Auto-generated method stub
-		return null;
+		Symbol fSymbol = null;
+		try {
+			MethodType mt = TypeTable.methodType(method);
+			fSymbol = new Symbol(method.getName(), mt, Kind.METHOD);
+			fSymbol.setStatic(true);
+			getCurrentTable().insertSymbol(fSymbol);		
+		} catch (SemanticError e) {
+			errorHandler(e);
+		}
+		SymbolTable table = new SymbolTable(method.getName(), Kind.METHOD);
+		fSymbol.setRelatedSymTab(table);
+		method.setEnclosingScope(table);
+		getCurrentTable().getChilds().add(table);
+		table.setParentSymbolTable(getGlobal());
+		SymbolTable currentClassTable = getCurrentTable();
+		setCurrentTable(table);
+		for ( Formal f : method.getFormals() ){
+			f.accept(this);
+		}
+		setCurrentTable(currentClassTable);
+		return table;
 	}
 
 	@Override
@@ -459,12 +500,6 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	public Object visit(ExpressionBlock expressionBlock) {
 		expressionBlock.setEnclosingScope(getCurrentTable());
 		expressionBlock.getExpression().accept(this);
-		return null;
-	}
-
-	@Override
-	public Object visit(Library library) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
