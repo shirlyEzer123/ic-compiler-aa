@@ -1,14 +1,23 @@
 package IC.Types;
 
 import IC.AST.ICClass;
+import IC.SemanticChecks.SemanticError;
 
 public class ClassType extends Type {
 	private ICClass classAST;
 	private boolean unresolved = false;
-	
+	private ClassType parent = null;
+
 	public ClassType(ICClass classObj) {
 		super(classObj.getName());
 		this.classAST = classObj;
+		if ( classObj.hasSuperClass() ){
+			try {
+				this.parent = TypeTable.getUserType(classObj.getSuperClassName());
+			} catch (SemanticError e) {
+				System.err.println("Something went horribly wrong!!");
+			}
+		}
 	}
 
 	public ClassType(String className) {
@@ -31,7 +40,6 @@ public class ClassType extends Type {
 		this.parent = parent;
 	}
 
-	private ClassType parent;
 	
 	@Override
 	boolean subtypeof(Type t) {

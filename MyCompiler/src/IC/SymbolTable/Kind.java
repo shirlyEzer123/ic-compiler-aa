@@ -4,5 +4,8 @@ public enum Kind {
 	VARIABLE,
 	METHOD,
 	FIELD,
-	CLASS
+	CLASS,
+	BLOCK, 
+	PARAMETER, 
+	AUTOMATIC
 }

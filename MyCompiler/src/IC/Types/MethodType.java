@@ -2,9 +2,11 @@ package IC.Types;
 
 public class MethodType extends Type {
 	
-	public MethodType(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
+	public MethodType(Type[] paramTypes, Type returnType) {
+		super("");
+		this.paramTypes = paramTypes;
+		this.returnType = returnType;
+		setName(this.toString());
 	}
 
 	private Type[] paramTypes;
@@ -24,5 +26,21 @@ public class MethodType extends Type {
 
 	public void setReturnType(Type returnType) {
 		this.returnType = returnType;
+	}
+	
+	@Override
+	public String toString() {
+		String str = "";
+		Type[] ps = getParamTypes();
+		for(int i=0; i<ps.length-1; i++){
+			str += ps[i].toString() + ", ";
+		}
+		if(ps.length > 0){
+			str += ps[ps.length-1].toString();
+		}
+			
+		str += "->" + returnType.toString();
+		
+		return str;
 	}
 }

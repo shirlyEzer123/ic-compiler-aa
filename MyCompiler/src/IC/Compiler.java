@@ -9,6 +9,7 @@ import IC.Parser.Parser;
 import IC.Parser.SyntaxError;
 import IC.SymbolTable.SymbolTable;
 import IC.SymbolTable.SymbolTableConstructor;
+import IC.Types.TypeTable;
 import java_cup.runtime.Symbol;
 import IC.AST.Library;
 import IC.AST.PrettyPrinter;
@@ -86,11 +87,12 @@ public class Compiler {
 			System.out.println("");
 			if ( printAST ) {
 				Program root = (Program) parseSymbol.value;
-				//PrettyPrinter printer = new PrettyPrinter(args[0]);
-				//System.out.println( printer.visit(root) );
+//				PrettyPrinter printer = new PrettyPrinter(args[0]);
+//				System.out.println( printer.visit(root) );
 				SymbolTableConstructor stc = new SymbolTableConstructor();
 				SymbolTable st = (SymbolTable) stc.visit(root);
-				st.printSymbolTable(st, args[0]);
+				st.printSymbolTable("Global",st, args[0]);
+				TypeTable.printTable();
 			}			
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());
