@@ -115,6 +115,10 @@ public class SymbolTable {
 	}
 
 	private static void printChildrenTables(SymbolTable syta) {
+		if ( syta.childs.size() == 0 ){
+			System.out.println();
+			return;
+		}
 		System.out.print("Children tables: ");
 		for ( Iterator<SymbolTable> iter = syta.childs.iterator(); iter.hasNext(); ){
 			SymbolTable syta1 = iter.next();

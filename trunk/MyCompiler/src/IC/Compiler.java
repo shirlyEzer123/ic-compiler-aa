@@ -41,12 +41,16 @@ public class Compiler {
 		
 		// handle arguments parsing
 		boolean printAST = false;
+		boolean dumpSymTab = false;
 		String libFileName = "libic.sig";
 		for ( int i = 1; i < args.length; i++) {
 			if ( ( args[i].charAt(0) == '-') && (args[i].charAt(1) == 'L') ) {
 				libFileName = args[i].substring(2);
 			} else if ( args[i].equals("-print-ast") ){
 				printAST = true;
+			}
+			else if (args[i].equals("-dump-symtab") ){
+				dumpSymTab = true;
 			}
 		}
 		
@@ -59,17 +63,18 @@ public class Compiler {
 		}
 		Lexer libscanner = new Lexer(libFile);
 		LibraryParser libparser = new LibraryParser(libscanner);
+		Symbol libSym = null;
 		try {
-			Symbol parseSymbol = libparser.parse();
+			libSym = libparser.parse();
 			System.out.println("Parsed " + libFileName + " successfully!");
-			
-			if ( printAST ) {
-				Library root = (Library) parseSymbol.value;
-				PrettyPrinter printer = new PrettyPrinter(libFileName);
-				//System.out.println( printer.visit(root) );
-			}
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
+			return;
+		}
+		Library libRoot = (Library) libSym.value;
+		if ( printAST ) {
+			PrettyPrinter printer = new PrettyPrinter(libFileName);
+			System.out.println( printer.visit(libRoot) );
 		}
 		
 		// Parse the input file
@@ -85,15 +90,19 @@ public class Compiler {
 			Symbol parseSymbol = parser.parse();
 			System.out.println("Parsed " + args[0] + " successfully!");
 			System.out.println("");
+			Program root = (Program) parseSymbol.value;
+			root.setLibrary(libRoot);
 			if ( printAST ) {
-				Program root = (Program) parseSymbol.value;
-//				PrettyPrinter printer = new PrettyPrinter(args[0]);
-//				System.out.println( printer.visit(root) );
-				SymbolTableConstructor stc = new SymbolTableConstructor();
-				SymbolTable st = (SymbolTable) stc.visit(root);
+				PrettyPrinter printer = new PrettyPrinter(args[0]);
+				System.out.println( printer.visit(root) );
+			}	
+			SymbolTableConstructor stc = new SymbolTableConstructor();
+			SymbolTable st = (SymbolTable) stc.visit(root);
+		
+			if(dumpSymTab){
 				st.printSymbolTable("Global",st, args[0]);
 				TypeTable.printTable();
-			}			
+			}
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());
 		} catch (Exception e) {
