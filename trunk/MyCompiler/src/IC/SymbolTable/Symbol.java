@@ -9,12 +9,14 @@ public class Symbol {
 	private boolean isStatic = false;
 	private boolean unresolved = false;
 	private SymbolTable relatedSymTab = null;
+	private int line;
 	
-	public Symbol(String id, Type type, Kind kind) {
+	public Symbol(String id, Type type, Kind kind, int line) {
 		super();
 		this.id = id;
 		this.setType(type);
 		this.setKind(kind);
+		this.setLine(line);
 	}
 
 	
@@ -70,5 +72,16 @@ public class Symbol {
 
 	public void setRelatedSymTab(SymbolTable relatedSymTab) {
 		this.relatedSymTab = relatedSymTab;
+	}
+
+
+	public int getLine() {
+		// TODO Auto-generated method stub
+		return line;
+	}
+
+
+	public void setLine(int line) {
+		this.line = line;
 	}
 }

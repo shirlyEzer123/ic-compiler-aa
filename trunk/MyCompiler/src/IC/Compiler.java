@@ -101,7 +101,7 @@ public class Compiler {
 		
 			if(dumpSymTab){
 				st.printSymbolTable("Global",st, args[0]);
-				TypeTable.printTable();
+				TypeTable.printTable(args[0]);
 			}
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());

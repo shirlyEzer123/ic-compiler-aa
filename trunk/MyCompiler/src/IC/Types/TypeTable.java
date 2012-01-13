@@ -29,47 +29,21 @@ public class TypeTable {
 		super();
 	}
 
-	// ...
 
 	public static void addUserType(ICClass icClass) throws SemanticError{
 		String className = icClass.getName();
 		if ( uniqueClassTypes.containsKey(className) ){
-			throw new SemanticError("Class redefined: " + className);
+			throw new SemanticError(icClass.getLine(),"Class redefined: " + className);
 		}
 		uniqueClassTypes.put(className, new ClassType(icClass));
 	}
 	
-	public static ClassType getUserType(String className) throws SemanticError{
+	public static ClassType getUserType(String className){
 		if ( uniqueClassTypes.containsKey(className) )
 			return uniqueClassTypes.get(className);
-		throw new SemanticError("No such type: " + className);
+		return null;
 	}
 	
-//	// Returns unique class type object
-//	public static ClassType classType(ICClass classObj) {
-//		if (uniqueClassTypes.containsKey(classObj.getName())) {
-//			// array type object already created – return it
-//			return uniqueClassTypes.get(classObj.getName());
-//		} else {
-//			// object doesn’t exist – create and return it
-//			ClassType classt = new ClassType(classObj);
-//			uniqueClassTypes.put(classObj.getName(), classt);
-//			return classt;
-//		}
-//	}
-//
-//	// Returns unique class type object
-//	public static ClassType classType(String className) {
-//		if (uniqueClassTypes.containsKey(className)) {
-//			// array type object already created – return it
-//			return uniqueClassTypes.get(className);
-//		} else {
-//			// object doesn’t exist – create and return it
-//			ClassType classt = new ClassType(className);
-//			uniqueClassTypes.put(className, classt);
-//			return classt;
-//		}
-//	}
 
 	// Returns unique array type object
 	public static ArrayType arrayType(Type elemType, int dim) {
@@ -103,7 +77,7 @@ public class TypeTable {
 				result = voidType;
 				break;
 			default:
-				throw new SemanticError("Something went horribly wrong!!!");
+				throw new SemanticError(type.getLine(),"Something went horribly wrong!!!");
 			}
 		} else if ( type instanceof UserType ) {
 			String className = ((UserType) type).getName();
@@ -111,7 +85,7 @@ public class TypeTable {
 		} else if ( type instanceof ICVoid ) {
 			result =  voidType;
 		} else {
-			throw new SemanticError("Something went horribly wrong!!!");
+			throw new SemanticError(type.getLine(),"Something went horribly wrong!!!");
 		}
 		if ( type.getDimension() > 0 )
 			return arrayType(result, type.getDimension());
@@ -140,17 +114,17 @@ public class TypeTable {
 		}
 	}
 
-	public static void printTable() {
-		String str = "";
-		str += intType.getID() + ": Primitive type: " + intType + "\n";
-		str += boolType.getID() + ": Primitive type: " + boolType + "\n";
-		str += nullType.getID() + ": Primitive type: " + nullType + "\n";
-		str += stringType.getID() + ": Primitive type: " + stringType + "\n";
-		str += voidType.getID() + ": Primitive type: " + voidType + "\n";
+	public static void printTable(String filename) {
+		String str = "Type Table: " + filename + "\n";
+		str += "\t" + intType.getID() + ": Primitive type: " + intType + "\n";
+		str += "\t" + boolType.getID() + ": Primitive type: " + boolType + "\n";
+		str += "\t" + nullType.getID() + ": Primitive type: " + nullType + "\n";
+		str += "\t" + stringType.getID() + ": Primitive type: " + stringType + "\n";
+		str += "\t" + voidType.getID() + ": Primitive type: " + voidType + "\n";
 		
 		for(String s : uniqueClassTypes.keySet()){
 			ClassType ct = uniqueClassTypes.get(s);
-			str += ct.getID() + ": Class: " + s ;
+			str += "\t" + ct.getID() + ": Class: " + s ;
 			if ( ct.getParent() != null )
 				str += ", Superclass ID: " + ct.getParent().getID();
 			str += "\n";
@@ -158,12 +132,12 @@ public class TypeTable {
 		
 		for(String s : uniqueArrayTypes.keySet()){
 			ArrayType at = uniqueArrayTypes.get(s);
-			str += at.getID() + ": Array type: " + at + "\n";
+			str += "\t" + at.getID() + ": Array type: " + at + "\n";
 		}
 
 		for(String s : uniqueMethodTypes.keySet()){
 			MethodType mt = uniqueMethodTypes.get(s);
-			str += mt.getID() + ": Method type: {" + mt + "}\n";
+			str += "\t" + mt.getID() + ": Method type: {" + mt + "}\n";
 		}
 
 		System.out.println(str);
