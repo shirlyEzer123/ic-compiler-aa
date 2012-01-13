@@ -1,13 +1,14 @@
 class A {
-	/*void test()
+	void testA()
 	{
 		A[] a;
 		a[0].foo(); 
-		//t();
-	}*/
+		B b;
+		x = 3;
+	}
 	
 	void foo() {}
-	//int x;
+	int x;
 	static void f()
 	{
 		//x = 3;
@@ -17,11 +18,13 @@ class A {
 	}
 }
 
-class B {
+class B extends A {
 	void test()
 	{
 		A a;
 		a.foo();
+		x = 3;
+		testA(x);
 	}
 	
 	static void sf() {}

@@ -8,7 +8,7 @@ public class Symbol {
 	private Kind kind;
 	private boolean isStatic = false;
 	private boolean unresolved = false;
-	private SymbolTable relatedSymTab = null;
+//	private SymbolTable relatedSymTab = null;
 	private int line;
 	
 	public Symbol(String id, Type type, Kind kind, int line) {
@@ -65,14 +65,14 @@ public class Symbol {
 	}
 
 
-	public SymbolTable getRelatedSymTab() {
-		return relatedSymTab ;
-	}
-
-
-	public void setRelatedSymTab(SymbolTable relatedSymTab) {
-		this.relatedSymTab = relatedSymTab;
-	}
+//	public SymbolTable getRelatedSymTab() {
+//		return relatedSymTab ;
+//	}
+//
+//
+//	public void setRelatedSymTab(SymbolTable relatedSymTab) {
+//		this.relatedSymTab = relatedSymTab;
+//	}
 
 
 	public int getLine() {

@@ -2,11 +2,13 @@ package IC.Types;
 
 import IC.AST.ICClass;
 import IC.SemanticChecks.SemanticError;
+import IC.SymbolTable.SymbolTable;
 
 public class ClassType extends Type {
 	private ICClass classAST;
-	private boolean unresolved = false;
 	private ClassType parent = null;
+	private SymbolTable symbolTable = null;
+	
 
 	public ClassType(ICClass classObj) {
 		super(classObj.getName());
@@ -49,12 +51,12 @@ public class ClassType extends Type {
 			return false;
 	}
 
-	public boolean isUnresolved() {
-		return unresolved;
+	public SymbolTable getSymbolTable() {
+		return symbolTable;
 	}
 
-	public void setUnresolved(boolean unresolved) {
-		this.unresolved = unresolved;
+	public void setSymbolTable(SymbolTable symbolTable) {
+		this.symbolTable = symbolTable;
 	}
 
 }
