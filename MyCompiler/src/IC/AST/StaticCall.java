@@ -37,4 +37,8 @@ public class StaticCall extends Call {
 		return className;
 	}
 
+	@Override
+	public String toString() {
+		return getClassName() + "." + getName();
+	}
 }

@@ -51,7 +51,9 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	private SymbolTable currentTable;
 	private SymbolTable global;
-	private Map<Call, SymbolTable> unresolved = new HashMap<>();
+	//private Map<Call, SymbolTable> unresolved = new HashMap<>();
+	//private boolean unresCheck = false;
+	private boolean isFieldMethodInserted = false;
 	private static int BlockNumber = 0;
 	
 	private void errorHandler(SemanticError e){
@@ -68,61 +70,94 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		for ( ICClass c : program.getClasses() ){
 			try {
 				TypeTable.addUserType(c);
+				ClassType ct = TypeTable.getUserType(c.getName());
+				if ( ct == null )
+					errorHandler(new SemanticError(c.getLine(), "Class not found: " + c.getName()));
+				Symbol classSymbol = null;
+				try {
+					classSymbol = new Symbol(c.getName(), ct, Kind.CLASS, c.getLine());
+					globalTable.insertSymbol(classSymbol);
+				} catch (SemanticError e) {
+					errorHandler(e);
+				}
+				
 			} catch (SemanticError e) {
 				errorHandler(e);
 			}
 		}
 		for ( ICClass c : program.getClasses() ){
-			Symbol classSymbol = null;
-			ClassType ct = TypeTable.getUserType(c.getName());
-			if ( ct == null )
-				errorHandler(new SemanticError(c.getLine(), "Class not found: " + c.getName()));
-			try {
-				classSymbol = new Symbol(c.getName(), ct, Kind.CLASS, c.getLine());
-				globalTable.insertSymbol(classSymbol);
-			} catch (SemanticError e) {
-				errorHandler(e);
-			}
-			classSymbol.setRelatedSymTab((SymbolTable) c.accept(this));
+			c.accept(this);
 		}
+		
+
+//		try {
+//			checkUnresolved();
+//		} catch (SemanticError e) {
+//			errorHandler(e);
+//		}
+		program.getLibrary().accept(this);
+		
+		isFieldMethodInserted = true;
+		
+		for ( ICClass c : program.getClasses() ){
+			c.accept(this);
+		}
+		
+		return globalTable;
+	}
+
+	/**
+	 * @throws SemanticError 
+	 * 
+	 */
+//	private void checkUnresolved() throws SemanticError {
+//		setUnresolvedChecking();
 //		Map<Call, SymbolTable> oldUnRes = getUnresolved();
 //		setUnresolved(new HashMap<Call, SymbolTable>() );
 //		for ( Call call : oldUnRes.keySet() ){
-//			SymbolTable env = getUnresolved().get(call);
+//			SymbolTable env = oldUnRes.get(call);
 //			setCurrentTable(env);
 //			call.accept(this);
 //		}
 //		if ( getUnresolved().size() > 0 ){
-//			errorHandler(new SemanticError(line, string))
+//			Call unresCall = getUnresolved().keySet().iterator().next();
+//			throw new SemanticError( unresCall.getLine(), 
+//					"Unresolved call to: " + unresCall);
 //		}
-		program.getLibrary().accept(this);
-		return globalTable;
-	}
+//	}
+
+//	private void setUnresolvedChecking() {
+//		unresCheck  = true;
+//	}
 
 	@Override
 	public Object visit(ICClass icClass) {
-		SymbolTable table = new SymbolTable(icClass.getName(), Kind.CLASS);
-		if ( icClass.hasSuperClass() ) {
-			Symbol parentSym = getGlobal().lookup(icClass.getSuperClassName() );
-			if ( parentSym == null )
-				errorHandler(new SemanticError(icClass.getLine(), "Class not defined: " + icClass.getSuperClassName()));
-			SymbolTable pst = parentSym.getRelatedSymTab();
-			pst.getChilds().add(table);
-			table.setParentSymbolTable(pst);
+		if ( ! isFieldMethodInserted ) {
+			SymbolTable table = new SymbolTable(icClass.getName(), Kind.CLASS);
+			if ( icClass.hasSuperClass() ) {
+				Symbol parentSym = getGlobal().lookup(icClass.getSuperClassName() );
+				if ( parentSym == null )
+					errorHandler(new SemanticError(icClass.getLine(), "Class not defined: " + icClass.getSuperClassName()));
+				SymbolTable pst = parentSym.getRelatedSymTab();
+				pst.getChilds().add(table);
+				table.setParentSymbolTable(pst);
+			} else {
+				getGlobal().getChilds().add(table);
+				table.setParentSymbolTable(getGlobal());
+			}
+			setCurrentTable(table);
+			icClass.setEnclosingScope(table);
+			for ( Field f : icClass.getFields() ){
+				f.accept(this);
+			}
+			for ( Method m : icClass.getMethods() ){
+				m.accept(this);
+			}
+			setCurrentTable(table.getParentSymbolTable());
+			return table;
 		} else {
-			getGlobal().getChilds().add(table);
-			table.setParentSymbolTable(getGlobal());
+			return null ; // TODO
 		}
-		setCurrentTable(table);
-		icClass.setEnclosingScope(table);
-		for ( Field f : icClass.getFields() ){
-			f.accept(this);
-		}
-		for ( Method m : icClass.getMethods() ){
-			m.accept(this);
-		}
-		setCurrentTable(table.getParentSymbolTable());
-		return table;
 	}
 
 	@Override
@@ -205,7 +240,8 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		fSymbol.setRelatedSymTab(table);
 		method.setEnclosingScope(table);
 		getCurrentTable().getChilds().add(table);
-		table.setParentSymbolTable(getCurrentTable());
+		table.setParentSymbolTable(getGlobal());
+		SymbolTable oldCurrentTable = getCurrentTable();
 		setCurrentTable(table);
 		for ( Formal f : method.getFormals() ){
 			f.accept(this);
@@ -214,7 +250,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		for(Statement s : method.getStatements()){
 			s.accept(this);
 		}
-		setCurrentTable(table.getParentSymbolTable());
+		setCurrentTable(oldCurrentTable);
 		return table;
 	}
 
@@ -234,11 +270,12 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		method.setEnclosingScope(table);
 		getCurrentTable().getChilds().add(table);
 		table.setParentSymbolTable(getCurrentTable());
+		SymbolTable oldCurrentTable = getCurrentTable();
 		setCurrentTable(table);
 		for ( Formal f : method.getFormals() ){
 			f.accept(this);
 		}
-		setCurrentTable(table.getParentSymbolTable());
+		setCurrentTable(oldCurrentTable);
 		return table;
 	}
 
@@ -378,14 +415,21 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(VariableLocation location) {
-		location.setEnclosingScope(getCurrentTable());
+		//location.setEnclosingScope(getCurrentTable());
+		Symbol locSym = null;
 		if ( location.isExternal() ) {
 			location.getLocation().accept(this);
-			//TODO
+			SymbolTable leftSymTab = location.getLocation().getEnclosingScope();
+			if ( leftSymTab == null ) {
+				return null;
+			}
+			locSym = location.getLocation().getEnclosingScope().lookup(location.getName());
 		} else {
-			if ( getCurrentTable().lookup(location.getName()) == null )
-				errorHandler(new SemanticError(location.getLine(), "location not found: " + location.getName()));
+			locSym = getCurrentTable().lookup(location.getName());
 		}
+		if ( locSym == null )
+			errorHandler(new SemanticError(location.getLine(), "location not found: " + location.getName()));
+		location.setEnclosingScope(locSym.getRelatedSymTab());
 		return null;
 	}
 
@@ -400,11 +444,16 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(StaticCall call) {
 		call.setEnclosingScope(getCurrentTable());
-		for ( Expression exp : call.getArguments() )
-			exp.accept(this);
+		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
+			for ( Expression exp : call.getArguments() )
+				exp.accept(this);
+		}
 		
-		if ( getGlobal().lookup(call.getClassName()) == null )
-			errorHandler(new SemanticError(call.getLine(), "Class not found: " + call.getClassName()));
+		if ( getGlobal().lookup(call.getClassName()) == null ) {
+			//errorHandler(new SemanticError(call.getLine(), "Class not found: " + call.getClassName()));
+			getUnresolved().put(call, currentTable);
+			return null;
+		}
 		
 		SymbolTable classST = getGlobal().lookup(call.getClassName()).getRelatedSymTab();
 		
@@ -419,12 +468,25 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		return null;
 	}
 
+	private boolean isInCheckUnRes() {
+		return unresCheck;
+	}
+
 	@Override
 	public Object visit(VirtualCall call) {
 		call.setEnclosingScope(getCurrentTable());
-		for ( Expression exp : call.getArguments() )
-			exp.accept(this);
-		if ( currentTable.lookup(call.getName()) == null )
+		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
+			if ( call.isExternal() )
+				call.getLocation().accept(this);
+			for ( Expression exp : call.getArguments() )
+				exp.accept(this);
+		}
+		if ( call.isExternal() ) {
+			SymbolTable classTable = call.getLocation().getEnclosingScope();
+			if ( classTable.lookup(call.getName()) == null )
+				getUnresolved().put(call, currentTable);
+		}
+		else if ( currentTable.lookup(call.getName()) == null )
 			getUnresolved().put(call, currentTable);
 		return null;
 	}
