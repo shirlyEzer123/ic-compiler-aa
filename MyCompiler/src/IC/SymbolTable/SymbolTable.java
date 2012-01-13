@@ -26,9 +26,16 @@ public class SymbolTable {
 		  if ( entries.containsKey( sym.getId() ) ){
 			  throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId());
 		  }
-		  else {
-			  entries.put(sym.getId(), sym);
+		  
+		  else if(getParentSymbolTable() != null){
+			  if(getParentSymbolTable().lookup(sym.getId()) != null){
+				  throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId() + " which appears in superclass");
+			  }
+				  
 		  }
+		  
+		  entries.put(sym.getId(), sym);
+		  
 	  }
 	  
 	  public Symbol lookup(String ID) {
