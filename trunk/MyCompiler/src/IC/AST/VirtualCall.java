@@ -54,5 +54,9 @@ public class VirtualCall extends Call {
 	public Expression getLocation() {
 		return location;
 	}
-
+	
+	@Override
+	public String toString() {
+		return getName();
+	}
 }

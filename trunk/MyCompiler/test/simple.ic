@@ -1,11 +1,28 @@
-// Simple IC program for testing
-
-class C {
-	void foo(int arg, C differentArg) {
-		x = 1;
-		int y;
-		while ( x == 5 )
-			print(3);
-		return expr;
+class A {
+	/*void test()
+	{
+		A[] a;
+		a[0].foo(); 
+		//t();
+	}*/
+	
+	void foo() {}
+	//int x;
+	static void f()
+	{
+		//x = 3;
+		B.sf();
+		//test();
+		//C.x();
 	}
+}
+
+class B {
+	void test()
+	{
+		A a;
+		a.foo();
+	}
+	
+	static void sf() {}
 }
