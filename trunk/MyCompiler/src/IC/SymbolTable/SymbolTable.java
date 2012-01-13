@@ -27,11 +27,11 @@ public class SymbolTable {
 			  throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId());
 		  }
 		  
+		  //Enforcing no redcleration of fields or methods which have already been declared by superclass
 		  else if(getParentSymbolTable() != null){
 			  if(getParentSymbolTable().lookup(sym.getId()) != null){
 				  throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId() + " which appears in superclass");
-			  }
-				  
+			  }	  
 		  }
 		  
 		  entries.put(sym.getId(), sym);
@@ -186,6 +186,10 @@ public class SymbolTable {
 
 	public void setKind(Kind kind) {
 		this.kind = kind;
+	}
+	
+	public Map<String,Symbol> getEntries(){
+		return entries;
 	}
 	
 
