@@ -24,20 +24,20 @@ public class SymbolTable {
 	  
 	  public void insertSymbol(Symbol sym) throws SemanticError{
 		  if ( entries.containsKey( sym.getId() ) ){
-			  throw new SemanticError("Redecleration of symbol " + sym.getId());
+			  throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId());
 		  }
 		  else {
 			  entries.put(sym.getId(), sym);
 		  }
 	  }
 	  
-	  public Symbol lookup(String ID) throws SemanticError{
+	  public Symbol lookup(String ID) {
 		  if(entries.containsKey(ID))
 			  return entries.get(ID);
 		  if(parentSymbolTable != null)
 			  return parentSymbolTable.lookup(ID);
 		  else
-			  throw new SemanticError("Unknown symbol " + ID);
+			  return null;
 	  }
 
 	public SymbolTable getParentSymbolTable() {

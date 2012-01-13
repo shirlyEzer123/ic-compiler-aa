@@ -12,11 +12,9 @@ public class ClassType extends Type {
 		super(classObj.getName());
 		this.classAST = classObj;
 		if ( classObj.hasSuperClass() ){
-			try {
-				this.parent = TypeTable.getUserType(classObj.getSuperClassName());
-			} catch (SemanticError e) {
+			this.parent = TypeTable.getUserType(classObj.getSuperClassName());
+			if ( this.parent == null )
 				System.err.println("Something went horribly wrong!!");
-			}
 		}
 	}
 
