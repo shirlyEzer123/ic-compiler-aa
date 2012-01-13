@@ -515,13 +515,23 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 //			SymbolTable classTable = call.getLocation().getEnclosingScope();
 			String callLocationName = ((VariableLocation)call.getLocation()).getName();
 			SymbolTable classTable = TypeTable.getClassSymTab(getCurrentTable().lookup(callLocationName).getType().getName());
-			if ( classTable.lookup(call.getName()) == null )
+			if ( classTable.lookup(call.getName()) == null ){
 				getUnresolved().put(call, currentTable);
+				return null;
+			}
 			if( classTable.lookup(call.getName()).isStatic())
 				errorHandler(new SemanticError(call.getLine(), "calling a static function from an external call"));
 		}
-		else if ( currentTable.lookup(call.getName()) == null )
-			getUnresolved().put(call, currentTable);
+		else{ 
+			if ( currentTable.lookup(call.getName()) == null )
+				getUnresolved().put(call, currentTable);
+			if( currentTable.lookup(call.getName()).isStatic()){
+				errorHandler(new SemanticError(call.getLine(), "calling a static function within a virtual call"));
+			}
+		}
+		
+		
+		
 		return null;
 	}
 
