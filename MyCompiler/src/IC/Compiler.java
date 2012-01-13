@@ -7,6 +7,8 @@ import IC.Parser.LibraryParser;
 import IC.Parser.Lexer;
 import IC.Parser.Parser;
 import IC.Parser.SyntaxError;
+import IC.SemanticChecks.SemanticError;
+import IC.SemanticChecks.SingleMainMethod;
 import IC.SymbolTable.SymbolTable;
 import IC.SymbolTable.SymbolTableConstructor;
 import IC.Types.TypeTable;
@@ -99,12 +101,19 @@ public class Compiler {
 			SymbolTableConstructor stc = new SymbolTableConstructor();
 			SymbolTable st = (SymbolTable) stc.visit(root);
 		
+			SingleMainMethod smm = new SingleMainMethod();
+			smm.checkForSingleMain(st);
+			smm.checkCorrectSignatureMain();
+			
 			if(dumpSymTab){
 				st.printSymbolTable("Global",st, args[0]);
 				TypeTable.printTable(args[0]);
 			}
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());
+		} catch (SemanticError e) {
+			System.out.println(e.getMessage());
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
