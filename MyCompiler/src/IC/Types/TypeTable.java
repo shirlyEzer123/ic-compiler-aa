@@ -12,6 +12,7 @@ import IC.AST.ICClass;
 import IC.AST.PrimitiveType;
 import IC.AST.UserType;
 import IC.SemanticChecks.SemanticError;
+import IC.SymbolTable.SymbolTable;
 
 public class TypeTable {
 	// Maps element types to array types\
@@ -141,6 +142,14 @@ public class TypeTable {
 		}
 
 		System.out.println(str);
+	}
+
+
+	public static SymbolTable getClassSymTab(String className) {
+		if ( uniqueClassTypes.containsKey(className)) {
+			return uniqueClassTypes.get(className).getSymbolTable();
+		}
+		return null;
 	}
 	
 }

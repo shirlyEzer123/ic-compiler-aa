@@ -51,7 +51,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	private SymbolTable currentTable;
 	private SymbolTable global;
-	//private Map<Call, SymbolTable> unresolved = new HashMap<>();
+	private Map<Call, SymbolTable> unresolved = new HashMap<>();
 	//private boolean unresCheck = false;
 	private boolean isFieldMethodInserted = false;
 	private static int BlockNumber = 0;
@@ -67,6 +67,8 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		setGlobal(globalTable);
 		setCurrentTable(globalTable);
 		program.setEnclosingScope(globalTable);
+		
+		// Build Type-Table and global Symbol table entries
 		for ( ICClass c : program.getClasses() ){
 			try {
 				TypeTable.addUserType(c);
@@ -85,24 +87,28 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 				errorHandler(e);
 			}
 		}
+		
+		// Build class symbol tables
 		for ( ICClass c : program.getClasses() ){
 			c.accept(this);
 		}
 		
-
-//		try {
-//			checkUnresolved();
-//		} catch (SemanticError e) {
-//			errorHandler(e);
-//		}
+		// Add the library symbol table
 		program.getLibrary().accept(this);
 		
+		// Build symbol tables for methods and code-blocks + scope checking
 		isFieldMethodInserted = true;
-		
 		for ( ICClass c : program.getClasses() ){
 			c.accept(this);
 		}
-		
+
+		// Make sure no unresolved calls were made
+		try {
+			checkUnresolved();
+		} catch (SemanticError e) {
+			errorHandler(e);
+		}
+
 		return globalTable;
 	}
 
@@ -110,7 +116,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	 * @throws SemanticError 
 	 * 
 	 */
-//	private void checkUnresolved() throws SemanticError {
+	private void checkUnresolved() throws SemanticError {
 //		setUnresolvedChecking();
 //		Map<Call, SymbolTable> oldUnRes = getUnresolved();
 //		setUnresolved(new HashMap<Call, SymbolTable>() );
@@ -119,12 +125,12 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 //			setCurrentTable(env);
 //			call.accept(this);
 //		}
-//		if ( getUnresolved().size() > 0 ){
-//			Call unresCall = getUnresolved().keySet().iterator().next();
-//			throw new SemanticError( unresCall.getLine(), 
-//					"Unresolved call to: " + unresCall);
-//		}
-//	}
+		if ( getUnresolved().size() > 0 ){
+			Call unresCall = getUnresolved().keySet().iterator().next();
+			throw new SemanticError( unresCall.getLine(), 
+					"Unresolved call to: " + unresCall);
+		}
+	}
 
 //	private void setUnresolvedChecking() {
 //		unresCheck  = true;
@@ -134,19 +140,23 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	public Object visit(ICClass icClass) {
 		if ( ! isFieldMethodInserted ) {
 			SymbolTable table = new SymbolTable(icClass.getName(), Kind.CLASS);
+			TypeTable.getUserType(icClass.getName()).setSymbolTable(table);
 			if ( icClass.hasSuperClass() ) {
-				Symbol parentSym = getGlobal().lookup(icClass.getSuperClassName() );
-				if ( parentSym == null )
-					errorHandler(new SemanticError(icClass.getLine(), "Class not defined: " + icClass.getSuperClassName()));
-				SymbolTable pst = parentSym.getRelatedSymTab();
+//				Symbol parentSym = getGlobal().lookup(icClass.getSuperClassName() );
+//				if ( parentSym == null )
+//					errorHandler(new SemanticError(icClass.getLine(), "Class not defined: " + icClass.getSuperClassName()));
+//				SymbolTable pst = parentSym.getRelatedSymTab();
+				SymbolTable pst = TypeTable.getClassSymTab(icClass.getSuperClassName());
+				if ( pst == null )
+					errorHandler(new SemanticError(icClass.getLine(), "Unknown super class: " + icClass.getSuperClassName()));
 				pst.getChilds().add(table);
 				table.setParentSymbolTable(pst);
 			} else {
 				getGlobal().getChilds().add(table);
 				table.setParentSymbolTable(getGlobal());
 			}
-			setCurrentTable(table);
 			icClass.setEnclosingScope(table);
+			setCurrentTable(table);
 			for ( Field f : icClass.getFields() ){
 				f.accept(this);
 			}
@@ -156,7 +166,16 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			setCurrentTable(table.getParentSymbolTable());
 			return table;
 		} else {
-			return null ; // TODO
+			SymbolTable table = TypeTable.getClassSymTab(icClass.getName());
+			setCurrentTable(table);
+//			for ( Field f : icClass.getFields() ){
+//				f.accept(this);
+//			}
+			for ( Method m : icClass.getMethods() ){
+				m.accept(this);
+			}
+			setCurrentTable(table.getParentSymbolTable());
+			return table;
 		}
 	}
 
@@ -179,104 +198,114 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(Field field) {
-		Symbol fSymbol = null;
-		try {
-			fSymbol = new Symbol(field.getName(), TypeTable.astType(field.getType()), Kind.FIELD, field.getLine());
-			getCurrentTable().insertSymbol(fSymbol);		
-		} catch (SemanticError e) {
-			errorHandler(e);
-		}
-		return fSymbol;
+//		if ( ! isFieldMethodInserted ) {
+			Symbol fSymbol = null;
+			try {
+				fSymbol = new Symbol(field.getName(), TypeTable.astType(field.getType()), Kind.FIELD, field.getLine());
+				getCurrentTable().insertSymbol(fSymbol);		
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+//		}
+		return null;
 	}
 
 	@Override
 	public Object visit(VirtualMethod method) {
-		Symbol fSymbol = null;
-		try {
-			MethodType mt = TypeTable.methodType(method);
-			fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
-			getCurrentTable().insertSymbol(fSymbol);		
-		} catch (SemanticError e) {
-			errorHandler(e);
+		if ( ! isFieldMethodInserted ) {
+			Symbol fSymbol = null;
+			try {
+				MethodType mt = TypeTable.methodType(method);
+				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
+				getCurrentTable().insertSymbol(fSymbol);		
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+		} else {
+			SymbolTable table = new SymbolTable(method.getName(), Kind.METHOD);
+			//fSymbol.setRelatedSymTab(table);
+			method.setEnclosingScope(table);
+			getCurrentTable().getChilds().add(table);
+			table.setParentSymbolTable(currentTable);
+			String thisTypeName = getCurrentTable().getId();
+			setCurrentTable(table);
+			Type thisType;
+			try {
+				thisType = TypeTable.getUserType(thisTypeName);
+				table.insertSymbol(new Symbol("this", thisType, Kind.AUTOMATIC, method.getLine()));
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+			for ( Formal f : method.getFormals() ){
+				f.accept(this);
+			}
+			
+			for(Statement s : method.getStatements()){
+				s.accept(this);
+			}
+			setCurrentTable(table.getParentSymbolTable());
 		}
-		SymbolTable table = new SymbolTable(method.getName(), Kind.METHOD);
-		fSymbol.setRelatedSymTab(table);
-		method.setEnclosingScope(table);
-		getCurrentTable().getChilds().add(table);
-		table.setParentSymbolTable(currentTable);
-		setCurrentTable(table);
-		String thisTypeName = table.getParentSymbolTable().getId();/*.subSequence(0, 
-				table.getParentSymbolTable().getId().length() - 4).toString();*/
-		Type thisType;
-		try {
-			thisType = TypeTable.getUserType(thisTypeName);
-			table.insertSymbol(new Symbol("this", thisType, Kind.AUTOMATIC, method.getLine()));
-		} catch (SemanticError e) {
-			errorHandler(e);
-		}
-		for ( Formal f : method.getFormals() ){
-			f.accept(this);
-		}
-		
-		for(Statement s : method.getStatements()){
-			s.accept(this);
-		}
-		setCurrentTable(table.getParentSymbolTable());
-		return table;
+		return null;
 	}
 
 	@Override
 	public Object visit(StaticMethod method) {
-		Symbol fSymbol = null;
-		try {
-			MethodType mt = TypeTable.methodType(method);
-			fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
-			fSymbol.setStatic(true);
-			getCurrentTable().insertSymbol(fSymbol);		
-		} catch (SemanticError e) {
-			errorHandler(e);
+		if ( ! isFieldMethodInserted ) {
+			Symbol fSymbol = null;
+			try {
+				MethodType mt = TypeTable.methodType(method);
+				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
+				fSymbol.setStatic(true);
+				getCurrentTable().insertSymbol(fSymbol);		
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+		} else {
+			SymbolTable table = new SymbolTable(method.getName(), Kind.METHOD);
+			//fSymbol.setRelatedSymTab(table);
+			method.setEnclosingScope(table);
+			getCurrentTable().getChilds().add(table);
+			table.setParentSymbolTable(getGlobal());
+			SymbolTable oldCurrentTable = getCurrentTable();
+			setCurrentTable(table);
+			for ( Formal f : method.getFormals() ){
+				f.accept(this);
+			}
+			
+			for(Statement s : method.getStatements()){
+				s.accept(this);
+			}
+			setCurrentTable(oldCurrentTable);
 		}
-		SymbolTable table = new SymbolTable(method.getName(), Kind.METHOD);
-		fSymbol.setRelatedSymTab(table);
-		method.setEnclosingScope(table);
-		getCurrentTable().getChilds().add(table);
-		table.setParentSymbolTable(getGlobal());
-		SymbolTable oldCurrentTable = getCurrentTable();
-		setCurrentTable(table);
-		for ( Formal f : method.getFormals() ){
-			f.accept(this);
-		}
-		
-		for(Statement s : method.getStatements()){
-			s.accept(this);
-		}
-		setCurrentTable(oldCurrentTable);
-		return table;
+		return null;
 	}
 
 	@Override
 	public Object visit(LibraryMethod method) {
-		Symbol fSymbol = null;
-		try {
-			MethodType mt = TypeTable.methodType(method);
-			fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
-			fSymbol.setStatic(true);
-			getCurrentTable().insertSymbol(fSymbol);		
-		} catch (SemanticError e) {
-			errorHandler(e);
+		if ( ! isFieldMethodInserted ) {
+			Symbol fSymbol = null;
+			try {
+				MethodType mt = TypeTable.methodType(method);
+				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
+				fSymbol.setStatic(true);
+				getCurrentTable().insertSymbol(fSymbol);		
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+		} else {
+			SymbolTable table = new SymbolTable(method.getName(), Kind.METHOD);
+			//fSymbol.setRelatedSymTab(table);
+			method.setEnclosingScope(table);
+			getCurrentTable().getChilds().add(table);
+			table.setParentSymbolTable(getGlobal());
+			SymbolTable oldCurrentTable = getCurrentTable();
+			setCurrentTable(table);
+			for ( Formal f : method.getFormals() ){
+				f.accept(this);
+			}
+			setCurrentTable(oldCurrentTable);
 		}
-		SymbolTable table = new SymbolTable(method.getName(), Kind.METHOD);
-		fSymbol.setRelatedSymTab(table);
-		method.setEnclosingScope(table);
-		getCurrentTable().getChilds().add(table);
-		table.setParentSymbolTable(getCurrentTable());
-		SymbolTable oldCurrentTable = getCurrentTable();
-		setCurrentTable(table);
-		for ( Formal f : method.getFormals() ){
-			f.accept(this);
-		}
-		setCurrentTable(oldCurrentTable);
-		return table;
+		return null;
 	}
 
 	@Override
@@ -429,8 +458,9 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		}
 		if ( locSym == null )
 			errorHandler(new SemanticError(location.getLine(), "location not found: " + location.getName()));
-		location.setEnclosingScope(locSym.getRelatedSymTab());
-		return null;
+		SymbolTable locationTypeSymTab = TypeTable.getClassSymTab(locSym.getType().getName());
+		location.setEnclosingScope(locationTypeSymTab);
+		return locationTypeSymTab;
 	}
 
 	@Override
@@ -444,10 +474,10 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(StaticCall call) {
 		call.setEnclosingScope(getCurrentTable());
-		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
+//		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
 			for ( Expression exp : call.getArguments() )
 				exp.accept(this);
-		}
+//		}
 		
 		if ( getGlobal().lookup(call.getClassName()) == null ) {
 			//errorHandler(new SemanticError(call.getLine(), "Class not found: " + call.getClassName()));
@@ -455,7 +485,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			return null;
 		}
 		
-		SymbolTable classST = getGlobal().lookup(call.getClassName()).getRelatedSymTab();
+		SymbolTable classST = TypeTable.getClassSymTab(call.getClassName());
 		
 		if ( (classST == null ) || (classST.lookup(call.getName()) == null) ) {
 			getUnresolved().put(call, currentTable);
@@ -468,19 +498,19 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		return null;
 	}
 
-	private boolean isInCheckUnRes() {
-		return unresCheck;
-	}
+//	private boolean isInCheckUnRes() {
+//		return unresCheck;
+//	}
 
 	@Override
 	public Object visit(VirtualCall call) {
 		call.setEnclosingScope(getCurrentTable());
-		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
+//		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
 			if ( call.isExternal() )
 				call.getLocation().accept(this);
 			for ( Expression exp : call.getArguments() )
 				exp.accept(this);
-		}
+//		}
 		if ( call.isExternal() ) {
 			SymbolTable classTable = call.getLocation().getEnclosingScope();
 			if ( classTable.lookup(call.getName()) == null )
