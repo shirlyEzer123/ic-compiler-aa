@@ -1,71 +1,56 @@
 package IC.SemanticChecks;
 
+import IC.AST.ICClass;
+import IC.AST.Program;
 import IC.AST.StaticMethod;
 import IC.SymbolTable.Kind;
 import IC.SymbolTable.Symbol;
 import IC.SymbolTable.SymbolTable;
+import IC.Types.MethodType;
+import IC.Types.Type;
+import IC.Types.TypeTable;
 
 public class SingleMainMethod {
-	public Symbol sm = null;
-	SymbolTable mainST = null;
+	private boolean mainFound = false;
 
 	/*
 	 * checks that only a single 'main' method exists
 	 */
-	public void checkForSingleMain(SymbolTable st) throws SemanticError {
+	public void checkForSingleMain(Program program) throws SemanticError {
 
-		if (st.getEntries().containsKey("main")
-				&& st.getEntries().get("main").getKind() == Kind.METHOD) {
-			if (sm == null) { //first time we see 'main' method
-				sm = st.getEntries().get("main");
-				mainST = st;
-			} else { //already saw 'main' method
-				sm = st.getEntries().get("main");
-				throw new SemanticError(sm.getLine(),
-						"program can only contain one 'main' method");
-			}
-		} 
-		//recursively check child symbol tables
-		for (SymbolTable childSymbolTable : st.getChilds()) {
-			checkForSingleMain(childSymbolTable);
-		}
-	}
-
-	/*
-	 * checks that 'main' has a correct signature
-	 * assuming that this method is called directly after checkForSingleMain
-	 */
-	public void checkCorrectSignatureMain() throws SemanticError {
-		boolean sawOneParam = false;
-
-		if (sm == null) {
-			throw new SemanticError(0, "program doesnt contain a 'main' method");
-		}
-		if (!sm.isStatic()) {
-			throw new SemanticError(sm.getLine(),
-					"'main' method must be static");
-		}
-		
-		//making sure that 'main' argument is of type string[], and that only one argument exists
-		for (SymbolTable childSymTab : mainST.getChilds()) { 
-			if (childSymTab.getId().equals("main")) {
-				for (Symbol sym : childSymTab.getEntries().values()) {
-					if (sym.getKind() == Kind.PARAMETER)
-						if (!sawOneParam) {
-							sawOneParam = true;
-							if (!sym.getType().getName().equals("string[]")) {
-								throw new SemanticError(sm.getLine(),
-										"wrong type of arguments for 'main' method");
-							}
-						} else {
-							throw new SemanticError(sm.getLine(),
-									"wrong number of arguments for 'main' method");
-						}
+		for ( ICClass icClass : program.getClasses() ) {
+			SymbolTable st = icClass.getEnclosingScope();
+			Symbol mainSym = st.lookin("main");
+			if ( mainSym != null ) {
+				if ( checkMain(mainSym) ){
+					if ( mainFound  )
+						throw new SemanticError(mainSym.getLine(),
+								"program can only contain one 'main' method");
+					else
+						mainFound = true;
 				}
 			}
 		}
-		if(!sawOneParam)
-			throw new SemanticError(sm.getLine(),
-					"'main method must have string[] argument");
+		if ( ! mainFound ){
+			throw new SemanticError(program.getLine(),
+					"program must have a 'static void main(string[])' method");
+		}
 	}
+
+	private boolean checkMain(Symbol mainSym) {
+		if ( mainSym.getKind() != Kind.METHOD )
+			return false;
+		if ( mainSym.isStatic() == false )
+			return false;
+		MethodType mt = (MethodType) mainSym.getType();
+		if ( mt.getReturnType() != TypeTable.voidType )
+			return false;
+		Type[] paramTypes = mt.getParamTypes();
+		if ( paramTypes.length != 1 )
+			return false;
+		if ( paramTypes[0] != TypeTable.arrayType(TypeTable.stringType, 1))
+			return false;
+		return true;
+	}
+
 }

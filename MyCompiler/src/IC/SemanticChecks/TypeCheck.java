@@ -141,11 +141,11 @@ public class TypeCheck implements Visitor {
 	@Override
 	public Object visit(Return returnStatement) {
 		Type retExpType = (Type) returnStatement.getValue().accept(this);
-		Symbol sm = returnStatement.getEnclosingScope().getEntries().get("$ret");
+		Symbol sm = returnStatement.getEnclosingScope().lookup("$ret");
 		if(sm == null){
 			typeError(returnStatement.getLine(), "void functions can't have a return statement");
 		}
-		Type funcRetType = returnStatement.getEnclosingScope().getEntries().get("$ret").getType();
+		Type funcRetType = returnStatement.getEnclosingScope().lookup("$ret").getType();
 		if(retExpType != funcRetType)
 			typeError(returnStatement.getLine(), "return type needs to be of type " + funcRetType);
 		return null;
@@ -194,8 +194,19 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(LocalVariable localVariable) {
-		// been here...
-		return null;
+		Type varType = null;
+		try {
+			varType = TypeTable.astType(localVariable.getType());
+		} catch (SemanticError e) {
+			typeError(e);
+		}
+		if ( localVariable.hasInitValue() ) { 
+			Type initValType = (Type) localVariable.getInitValue().accept(this);
+			if ( ! initValType.subtypeof(varType) )
+				typeError(localVariable.getLine(), "Can't initialize a variable of type "
+						+ varType.getName() + " with value of type " + initValType.getName() );
+		}
+		return varType;
 	}
 
 	@Override
@@ -300,8 +311,16 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(NewArray newArray) {
-		// TODO Auto-generated method stub
-		return null;
+		if ( newArray.getSize().accept(this) != TypeTable.intType )
+			typeError(newArray.getLine(), "Size of array must be an integer expression");
+		Type arrType = null;
+		try {
+			arrType = TypeTable.astType( newArray.getType() );
+		} catch (SemanticError e) {
+			typeError(e);
+		}
+		
+		return TypeTable.arrayType(arrType, 1);
 	}
 
 	@Override
@@ -311,7 +330,7 @@ public class TypeCheck implements Visitor {
 			return TypeTable.intType;
 		}
 		else{
-			typeError(length.getLine(), "can't perform .length operation on " + t.getName());
+			typeError(length.getLine(), "cant perform .length operation on " + t.getName());
 			return null;
 		}
 		 
@@ -349,7 +368,7 @@ public class TypeCheck implements Visitor {
 	}
 
 	private void binaryOpError(BinaryOp binaryOp, Type t1, Type t2) {
-		typeError(binaryOp.getLine(), "can't use "
+		typeError(binaryOp.getLine(), "cant use "
 				+ binaryOp.getOperator().name() + " on " + t1.getName()
 				+ " and " + t2.getName());
 	}
@@ -402,7 +421,7 @@ public class TypeCheck implements Visitor {
 	}
 
 	private void unaryOpError(UnaryOp unaryOp, Type t) {
-		typeError(unaryOp.getLine(), "can't use "
+		typeError(unaryOp.getLine(), "cant use "
 				+ unaryOp.getOperator().name() + " on " + t.getName());
 	}
 
@@ -442,6 +461,11 @@ public class TypeCheck implements Visitor {
 
 	private void typeError(int line, String msg) {
 		System.err.println("Semantic error at line " + line + ": " + msg);
+		System.exit(1);
+	}
+
+	private void typeError(SemanticError e) {
+		System.err.println(e.getMessage());
 		System.exit(1);
 	}
 

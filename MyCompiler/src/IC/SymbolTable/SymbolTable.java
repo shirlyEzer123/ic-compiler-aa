@@ -9,41 +9,58 @@ import java.util.Map;
 import IC.SemanticChecks.SemanticError;
 
 public class SymbolTable {
-	  /** map from String to Symbol **/
-	  private Map<String,Symbol> entries;
-	  private String id;
-	  private SymbolTable parentSymbolTable;
-	  private List<SymbolTable> childs = new LinkedList<>(); 
-	  private Kind kind;
-	  
-	  public SymbolTable(String id, Kind kind) {
-	    this.setId(id);
-	    entries = new HashMap<String,Symbol>();
-	    setKind(kind);
-	  }
-	  
-	  public void insertSymbol(Symbol sym) throws SemanticError{
-		  if ( entries.containsKey( sym.getId() ) ){
-			  throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId());
-		  }
-		  
-		  //Enforcing no redcleration of fields or methods which have already been declared by superclass
-		  else {
-			  entries.put(sym.getId(), sym);	  
-		  }
-		  
-		 
-		  
-	  }
-	  
-	  public Symbol lookup(String ID) {
-		  if(entries.containsKey(ID))
-			  return entries.get(ID);
-		  if(parentSymbolTable != null)
-			  return parentSymbolTable.lookup(ID);
-		  else
-			  return null;
-	  }
+	/** map from String to Symbol **/
+	private Map<String,Symbol> entries;
+	private String id;
+	private SymbolTable parentSymbolTable;
+	private List<SymbolTable> childs = new LinkedList<>(); 
+	private Kind kind;
+
+	public SymbolTable(String id, Kind kind) {
+		this.setId(id);
+		entries = new HashMap<String,Symbol>();
+		setKind(kind);
+	}
+
+	public void insertSymbol(Symbol sym) throws SemanticError{
+		if ( entries.containsKey( sym.getId() ) ){
+			throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId());
+		}
+
+		//Enforcing no redcleration of fields or methods which have already been declared by superclass
+		else {
+			entries.put(sym.getId(), sym);	  
+		}
+
+
+
+	}
+
+	/**
+	 * Looks for a symbol in the symbol table
+	 * @param ID the ID of the symbol to look
+	 * @return The symbol if it's in the symbol table or null if not
+	 */
+	public Symbol lookup(String ID) {
+		if(entries.containsKey(ID))
+			return entries.get(ID);
+		if(parentSymbolTable != null)
+			return parentSymbolTable.lookup(ID);
+		else
+			return null;
+	}
+
+	/**
+	 * Looks for a symbol in the specific symbol table (not in hierarchy)
+	 * @param ID the ID of the symbol to look
+	 * @return The symbol if it's in the symbol table or null if not
+	 */
+	public Symbol lookin(String ID) {
+		if(entries.containsKey(ID))
+			return entries.get(ID);
+		else
+			return null;
+	}
 
 	public SymbolTable getParentSymbolTable() {
 		return parentSymbolTable;
@@ -91,15 +108,15 @@ public class SymbolTable {
 			printParameters(syta);
 			printLocalVariables(syta);
 			printChildrenTables(syta);
-			
-			
+
+
 		}
-		
+
 		for ( Iterator<SymbolTable> iter = st.childs.iterator(); iter.hasNext(); ){
 			SymbolTable syta = iter.next();
 			printSymbolTable(syta.getId(), syta, null);
 		}
-		
+
 	}
 
 	private void printLocalVariables(SymbolTable syta) {
@@ -116,7 +133,7 @@ public class SymbolTable {
 				System.out.println("\tParameter: " + s.getType() + " " + s.getId());
 			}
 		}	
-		
+
 	}
 
 	private static void printChildrenTables(SymbolTable syta) {
@@ -138,7 +155,7 @@ public class SymbolTable {
 		for(Symbol s : syta.entries.values()){
 			if(s.getKind() == Kind.METHOD && !s.isStatic() ){
 				System.out.println("\tVirtual method: " + s.getId() + " {" + s.getType() + "}");
-				
+
 			}
 		}	
 	}
@@ -147,7 +164,7 @@ public class SymbolTable {
 		for(Symbol s : syta.entries.values()){
 			if(s.getKind() == Kind.METHOD && s.isStatic() ){
 				System.out.println("\tStatic method: " + s.getId() + " {" + s.getType() + "}");
-				
+
 			}
 		}	
 	}
@@ -175,7 +192,7 @@ public class SymbolTable {
 		default:
 			break;
 		}
-		
+
 	}
 
 	public Kind getKind() {
@@ -185,10 +202,6 @@ public class SymbolTable {
 	public void setKind(Kind kind) {
 		this.kind = kind;
 	}
-	
-	public Map<String,Symbol> getEntries(){
-		return entries;
-	}
-	
+
 
 }
