@@ -276,8 +276,11 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(This thisExpression) {
-		// TODO Auto-generated method stub
-		return null;
+		Symbol thisSym = getCurrentScope().lookup("this");
+		if ( thisSym == null ){
+			typeError(thisExpression.getLine(), "'this' is undefined here.");
+		}
+		return thisSym.getType();
 	}
 
 	@Override
@@ -423,13 +426,13 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(Library library) {
-		// TODO Auto-generated method stub
+		// been here...
 		return null;
 	}
 
 	@Override
 	public Object visit(ICVoid icVoid) {
-		// TODO Auto-generated method stub
+		// been here..
 		return null;
 	}
 
