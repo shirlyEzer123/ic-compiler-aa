@@ -141,6 +141,10 @@ public class TypeCheck implements Visitor {
 	@Override
 	public Object visit(Return returnStatement) {
 		Type retExpType = (Type) returnStatement.getValue().accept(this);
+		Symbol sm = returnStatement.getEnclosingScope().getEntries().get("$ret");
+		if(sm == null){
+			typeError(returnStatement.getLine(), "void functions can't have a return statement");
+		}
 		Type funcRetType = returnStatement.getEnclosingScope().getEntries().get("$ret").getType();
 		if(retExpType != funcRetType)
 			typeError(returnStatement.getLine(), "return type needs to be of type " + funcRetType);
@@ -307,7 +311,7 @@ public class TypeCheck implements Visitor {
 			return TypeTable.intType;
 		}
 		else{
-			typeError(length.getLine(), "cant perform .length operation on " + t.getName());
+			typeError(length.getLine(), "can't perform .length operation on " + t.getName());
 			return null;
 		}
 		 
@@ -345,7 +349,7 @@ public class TypeCheck implements Visitor {
 	}
 
 	private void binaryOpError(BinaryOp binaryOp, Type t1, Type t2) {
-		typeError(binaryOp.getLine(), "cant use "
+		typeError(binaryOp.getLine(), "can't use "
 				+ binaryOp.getOperator().name() + " on " + t1.getName()
 				+ " and " + t2.getName());
 	}
@@ -398,7 +402,7 @@ public class TypeCheck implements Visitor {
 	}
 
 	private void unaryOpError(UnaryOp unaryOp, Type t) {
-		typeError(unaryOp.getLine(), "cant use "
+		typeError(unaryOp.getLine(), "can't use "
 				+ unaryOp.getOperator().name() + " on " + t.getName());
 	}
 
