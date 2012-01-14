@@ -120,7 +120,9 @@ public class BreakAndContCheck implements Visitor{
 
 	@Override
 	public Object visit(If ifStatement) {
-		ifStatement.getElseOperation().accept(this);
+		ifStatement.getOperation().accept(this);
+		if(ifStatement.hasElse())
+			ifStatement.getElseOperation().accept(this);
 		return null;
 	}
 
@@ -131,25 +133,17 @@ public class BreakAndContCheck implements Visitor{
 
 	@Override
 	public Object visit(Break breakStatement) {
-		try {
-			throw new SemanticError(breakStatement.getLine(), 
-					"break can only appear inside loops");
-		} catch (SemanticError e) {
-			System.err.println(e.getMessage());
-			System.exit(0);
-		}
+		breakError(breakStatement.getLine(), 
+				"break can only appear inside loops");
 		return null;
 	}
 
+
+
 	@Override
 	public Object visit(Continue continueStatement) {
-		try {
-			throw new SemanticError(continueStatement.getLine(), 
-					"continue can only appear inside loops");
-		} catch (SemanticError e) {
-			System.err.println(e.getMessage());
-			System.exit(0);
-		}
+		breakError(continueStatement.getLine(), 
+				"continue can only appear inside loops");
 		return null;
 	}
 
@@ -263,4 +257,10 @@ public class BreakAndContCheck implements Visitor{
 		return null;
 	}
 	
+	private void breakError(int line, String string) {
+		System.err.println("semantic error at line " + line + ": " + string);
+		System.exit(0);
+	}
+	
+
 }
