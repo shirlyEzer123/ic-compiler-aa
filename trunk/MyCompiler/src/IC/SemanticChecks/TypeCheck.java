@@ -10,8 +10,10 @@ import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
 import IC.AST.BinaryOp;
 import IC.AST.Break;
+import IC.AST.Call;
 import IC.AST.CallStatement;
 import IC.AST.Continue;
+import IC.AST.Expression;
 import IC.AST.ExpressionBlock;
 import IC.AST.Field;
 import IC.AST.Formal;
@@ -48,6 +50,7 @@ import IC.SymbolTable.Kind;
 import IC.SymbolTable.Symbol;
 import IC.SymbolTable.SymbolTable;
 import IC.Types.ArrayType;
+import IC.Types.MethodType;
 import IC.Types.ClassType;
 import IC.Types.Type;
 import IC.Types.TypeTable;
@@ -224,14 +227,51 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(StaticCall call) {
-		// TODO
-		return null;
+		
+		// Scope checking assures us that this will work.
+		MethodType mt = (MethodType) TypeTable.getClassSymTab(call.getClassName())
+				.lookup(call.getName()).getType();
+		
+		checkMethodType(call, mt);
+		
+		return mt.getReturnType();
 	}
 
 	@Override
 	public Object visit(VirtualCall call) {
-		// TODO Auto-generated method stub
-		return null;
+		Symbol callSym = null;
+		if ( call.isExternal() ) {
+			Type locType = (Type) call.getLocation().accept(this);
+			SymbolTable locSymTab = TypeTable.getClassSymTab(locType.getName());
+			callSym = locSymTab.lookup(call.getName());
+		} else {
+			callSym = getCurrentScope().lookup(call.getName());
+		}
+		if ( callSym.getKind() != Kind.METHOD )
+			typeError(call.getLine(), call.getName() + " is not a method.");
+		MethodType mt = (MethodType) callSym.getType();
+		
+		checkMethodType(call, mt);
+		
+		return mt.getReturnType();
+	}
+
+	/**
+	 * @param call
+	 * @param mt
+	 */
+	private void checkMethodType(Call call, MethodType mt) {
+		Type[] pts = mt.getParamTypes();
+		List<Expression> args = call.getArguments();
+		if ( pts.length != args.size() )
+			typeError(call.getLine(), "Expected " + pts.length + " arguments. found: " + args.size()
+					+ " in call to " + call.getName());
+		for ( int i = 0; i < pts.length; i++ ){
+			Type argType = (Type) args.get(i).accept(this);
+			if ( ! argType.subtypeof(pts[i]) )
+				typeError(call.getLine(), "Can't use " + argType.getName() + " instead of " + pts[i].getName()
+						+ " as argument no. " + (i+1) + " in call to " + call.getName());
+		}
 	}
 
 	@Override
