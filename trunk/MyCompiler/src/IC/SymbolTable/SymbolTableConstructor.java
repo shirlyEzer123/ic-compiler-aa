@@ -489,9 +489,14 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(LocalVariable localVariable) {
 		localVariable.setEnclosingScope(getCurrentTable());
+		if ( localVariable.hasInitValue() )
+			localVariable.getInitValue().accept(this);
 		Symbol sym = null;
 		try {
-			sym = new Symbol(localVariable.getName(), TypeTable.astType(localVariable.getType()), 
+			Type varType = TypeTable.astType(localVariable.getType());
+			if ( varType == null )
+				throw new SemanticError(localVariable.getLine(), "Unknown type: "+ localVariable.getType().getName());
+			sym = new Symbol(localVariable.getName(), varType, 
 					Kind.VARIABLE, localVariable.getLine());
 			getCurrentTable().insertSymbol(sym);
 		} catch (SemanticError e) {

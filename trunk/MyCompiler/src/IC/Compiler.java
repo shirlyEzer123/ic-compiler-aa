@@ -104,8 +104,7 @@ public class Compiler {
 			SymbolTable st = (SymbolTable) stc.visit(root);
 		
 			SingleMainMethod smm = new SingleMainMethod();
-			smm.checkForSingleMain(st);
-			smm.checkCorrectSignatureMain();
+			smm.checkForSingleMain(root);
 			
 			BreakAndContCheck bacc = new BreakAndContCheck();
 			bacc.visit(root);
@@ -120,7 +119,7 @@ public class Compiler {
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());
 		} catch (SemanticError e) {
-			System.out.println(e.getMessage());
+			System.err.println(e.getMessage());
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
