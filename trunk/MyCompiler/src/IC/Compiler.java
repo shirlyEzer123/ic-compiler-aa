@@ -7,6 +7,7 @@ import IC.Parser.LibraryParser;
 import IC.Parser.Lexer;
 import IC.Parser.Parser;
 import IC.Parser.SyntaxError;
+import IC.SemanticChecks.BreakAndContCheck;
 import IC.SemanticChecks.SemanticError;
 import IC.SemanticChecks.SingleMainMethod;
 import IC.SymbolTable.SymbolTable;
@@ -104,6 +105,9 @@ public class Compiler {
 			SingleMainMethod smm = new SingleMainMethod();
 			smm.checkForSingleMain(st);
 			smm.checkCorrectSignatureMain();
+			
+			BreakAndContCheck bacc = new BreakAndContCheck();
+			bacc.visit(root);
 			
 			if(dumpSymTab){
 				st.printSymbolTable("Global",st, args[0]);
