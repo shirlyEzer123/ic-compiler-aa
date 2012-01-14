@@ -42,7 +42,7 @@ public class ClassType extends Type {
 
 	
 	@Override
-	boolean subtypeof(Type t) {
+	public boolean subtypeof(Type t) {
 		if (super.subtypeof(t))
 			return true;
 		else if ( getParent() != null )

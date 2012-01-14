@@ -10,6 +10,7 @@ import IC.Parser.SyntaxError;
 import IC.SemanticChecks.BreakAndContCheck;
 import IC.SemanticChecks.SemanticError;
 import IC.SemanticChecks.SingleMainMethod;
+import IC.SemanticChecks.TypeCheck;
 import IC.SymbolTable.SymbolTable;
 import IC.SymbolTable.SymbolTableConstructor;
 import IC.Types.TypeTable;
@@ -108,6 +109,9 @@ public class Compiler {
 			
 			BreakAndContCheck bacc = new BreakAndContCheck();
 			bacc.visit(root);
+			
+			TypeCheck tc = new TypeCheck();
+			tc.visit(root);
 			
 			if(dumpSymTab){
 				st.printSymbolTable("Global",st, args[0]);
