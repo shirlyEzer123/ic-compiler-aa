@@ -194,10 +194,13 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(ArrayLocation location) {
+		Object arrType = location.getArray().accept(this);
+		if ( ! (arrType instanceof ArrayType ) )
+			typeError(location.getLine(), "Not an array");
 		if ( location.getIndex().accept(this) != TypeTable.intType ) {
 			typeError(location.getLine(), "Array index must be an integer expression");
 		}
-		return ((ArrayType) location.getArray().accept(this)).getElemType();
+		return ((ArrayType) arrType).getElemType();
 	}
 
 	@Override
