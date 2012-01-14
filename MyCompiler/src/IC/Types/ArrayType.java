@@ -1,7 +1,7 @@
 package IC.Types;
 
 public class ArrayType extends Type {
-	Type elemType;
+	private Type elemType;
 	
 	public ArrayType(Type eType, int dim) {
 		super("");
@@ -9,7 +9,15 @@ public class ArrayType extends Type {
 		for ( int i = 0; i < dim ; i++ ){
 			arrName += "[]";
 		}
-		elemType = eType;
+		setElemType(eType);
 		setName(arrName);
+	}
+
+	public Type getElemType() {
+		return elemType;
+	}
+
+	public void setElemType(Type elemType) {
+		this.elemType = elemType;
 	}
 }

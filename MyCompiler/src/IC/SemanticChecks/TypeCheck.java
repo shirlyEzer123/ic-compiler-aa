@@ -42,6 +42,7 @@ import IC.AST.Visitor;
 import IC.AST.While;
 import IC.SymbolTable.Symbol;
 import IC.SymbolTable.SymbolTable;
+import IC.Types.ArrayType;
 import IC.Types.Type;
 import IC.Types.TypeTable;
 
@@ -196,7 +197,7 @@ public class TypeCheck implements Visitor {
 		if ( location.getIndex().accept(this) != TypeTable.intType ) {
 			typeError(location.getLine(), "Array index must be an integer expression");
 		}
-		return location.getArray().accept(this);
+		return ((ArrayType) location.getArray().accept(this)).getElemType();
 	}
 
 	@Override
