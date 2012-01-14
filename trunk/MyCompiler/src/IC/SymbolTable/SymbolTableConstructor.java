@@ -198,7 +198,10 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(Field field) {
-//		if ( ! isFieldMethodInserted ) {
+		// make sure the field is not already declared in the class hierarchy
+		if ( getCurrentTable().lookup(field.getName()) != null )
+			errorHandler(new SemanticError(field.getLine(), "Identifier already declared: "+field.getName()));
+		else {
 			Symbol fSymbol = null;
 			try {
 				fSymbol = new Symbol(field.getName(), TypeTable.astType(field.getType()), Kind.FIELD, field.getLine());
@@ -206,16 +209,26 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			} catch (SemanticError e) {
 				errorHandler(e);
 			}
-//		}
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(VirtualMethod method) {
 		if ( ! isFieldMethodInserted ) {
+			MethodType mt = TypeTable.methodType(method);
+			Symbol prevDec = getCurrentTable().lookup(method.getName());
+			if ( prevDec != null ) { 
+				// mothod has been declared in the class hierarchy. verify correct overriding
+				if ( prevDec.isStatic() ) 
+					errorHandler(new SemanticError(method.getLine(), 
+							"Previous decleration of " + method.getName() + " is static"));
+				else if ( prevDec.getType().getID() != mt.getID() )
+					errorHandler(new SemanticError(method.getLine(), 
+							"Cannot overload previous decleration of " + method.getName()));
+			}
 			Symbol fSymbol = null;
 			try {
-				MethodType mt = TypeTable.methodType(method);
 				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
 				getCurrentTable().insertSymbol(fSymbol);		
 			} catch (SemanticError e) {
@@ -252,8 +265,18 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	public Object visit(StaticMethod method) {
 		if ( ! isFieldMethodInserted ) {
 			Symbol fSymbol = null;
+			MethodType mt = TypeTable.methodType(method);
+			Symbol prevDec = getCurrentTable().lookup(method.getName());
+			if ( prevDec != null ) {
+				// mothod has been declared in the class hierarchy. verify correct hiding
+				if ( ! prevDec.isStatic() ) 
+					errorHandler(new SemanticError(method.getLine(), 
+							"Previous decleration of " + method.getName() + " is virtual"));
+				else if ( prevDec.getType().getID() != mt.getID() )
+					errorHandler(new SemanticError(method.getLine(), 
+							"Cannot overload previous decleration of " + method.getName()));
+			}
 			try {
-				MethodType mt = TypeTable.methodType(method);
 				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
 				fSymbol.setStatic(true);
 				getCurrentTable().insertSymbol(fSymbol);		

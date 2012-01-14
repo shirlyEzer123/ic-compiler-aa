@@ -10,13 +10,13 @@ public class ClassType extends Type {
 	private SymbolTable symbolTable = null;
 	
 
-	public ClassType(ICClass classObj) {
+	public ClassType(ICClass classObj) throws SemanticError {
 		super(classObj.getName());
 		this.classAST = classObj;
 		if ( classObj.hasSuperClass() ){
 			this.parent = TypeTable.getUserType(classObj.getSuperClassName());
 			if ( this.parent == null )
-				System.err.println("Something went horribly wrong!!");
+				throw new SemanticError(classObj.getLine(), "Undefined: " + classObj.getSuperClassName() + " which stated as super class");
 		}
 	}
 
