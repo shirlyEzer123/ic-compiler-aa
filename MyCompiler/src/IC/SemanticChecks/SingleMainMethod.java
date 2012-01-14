@@ -64,5 +64,8 @@ public class SingleMainMethod {
 				}
 			}
 		}
+		if(!sawOneParam)
+			throw new SemanticError(sm.getLine(),
+					"'main method must have string[] argument");
 	}
 }
