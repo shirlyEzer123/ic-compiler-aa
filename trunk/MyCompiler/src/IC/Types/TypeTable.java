@@ -48,10 +48,12 @@ public class TypeTable {
 
 	// Returns unique array type object
 	public static ArrayType arrayType(Type elemType, int dim) {
+		ArrayType arrt = null;
 		if ( dim > 1 ){
-			arrayType(elemType, dim-1);
+			arrt = new ArrayType(arrayType(elemType, dim-1),1);
+		} else {
+			arrt = new ArrayType(elemType, dim);
 		}
-		ArrayType arrt = new ArrayType(elemType, dim);
 		if (!uniqueArrayTypes.containsKey(arrt.getName())) {
 			// object doesn’t exist – create and return it
 			uniqueArrayTypes.put(arrt.getName(), arrt);
