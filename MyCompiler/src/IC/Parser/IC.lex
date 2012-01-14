@@ -120,8 +120,8 @@ START_DIGIT=[1-9]
 <LINE_COMMENT_STATE> [\n] 	{yybegin(YYINITIAL);}
 
 <YYINITIAL> {ID} 			{ return new ValuedToken(yyline, sym.ID, yytext()); }
-<YYINITIAL> "0"				{ return new ValuedToken(yyline, sym.INTEGER, yytext()); }
-<YYINITIAL> "0"({NUMBER})+  { throw new LexicalError(yyline, "leading zeroes are not allowed '"+yytext() +"'"); }
+<YYINITIAL> "0"+			{ return new ValuedToken(yyline, sym.INTEGER, yytext()); }
+<YYINITIAL> "0"+([1-9])+  	{ throw new LexicalError(yyline, "leading zeroes are not allowed '"+yytext() +"'"); }
 <YYINITIAL> {START_DIGIT}({NUMBER})*  		{ return new ValuedToken(yyline, sym.INTEGER, yytext()); }
 <YYINITIAL> {CLASS_IDENT}	{ return new ValuedToken(yyline, sym.CLASS_ID, yytext() ); }
 <YYINITIAL> .				{ throw new LexicalError(yyline, "illegal character '"+yytext() +"'"); }
