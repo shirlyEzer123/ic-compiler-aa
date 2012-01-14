@@ -44,9 +44,11 @@ import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.Visitor;
 import IC.AST.While;
+import IC.SymbolTable.Kind;
 import IC.SymbolTable.Symbol;
 import IC.SymbolTable.SymbolTable;
 import IC.Types.ArrayType;
+import IC.Types.ClassType;
 import IC.Types.Type;
 import IC.Types.TypeTable;
 
@@ -135,7 +137,10 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(Return returnStatement) {
-		// TODO Auto-generated method stub
+		Type retExpType = (Type) returnStatement.getValue().accept(this);
+		Type funcRetType = returnStatement.getEnclosingScope().getEntries().get("$ret").getType();
+		if(retExpType != funcRetType)
+			typeError(returnStatement.getLine(), "return type needs to be of type " + funcRetType);
 		return null;
 	}
 
@@ -237,8 +242,13 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(NewClass newClass) {
-		// TODO Auto-generated method stub
-		return null;
+		ClassType classType = TypeTable.getUserType(newClass.getName());
+		
+		if(classType == null){
+			typeError(newClass.getLine(), "unresolved type " + newClass.getName());
+		}
+		
+		return classType;
 	}
 
 	@Override
@@ -249,8 +259,15 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(Length length) {
-		// TODO Auto-generated method stub
-		return null;
+		Type t = (Type) length.getArray().accept(this);
+		if(t instanceof ArrayType){
+			return TypeTable.intType;
+		}
+		else{
+			typeError(length.getLine(), "cant perform .length operation on " + t.getName());
+			return null;
+		}
+		 
 	}
 
 	@Override
