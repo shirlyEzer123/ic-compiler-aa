@@ -28,13 +28,11 @@ public class SymbolTable {
 		  }
 		  
 		  //Enforcing no redcleration of fields or methods which have already been declared by superclass
-		  else if(getParentSymbolTable() != null){
-			  if(getParentSymbolTable().lookup(sym.getId()) != null){
-				  throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId() + " which appears in superclass");
-			  }	  
+		  else {
+			  entries.put(sym.getId(), sym);	  
 		  }
 		  
-		  entries.put(sym.getId(), sym);
+		 
 		  
 	  }
 	  

@@ -505,33 +505,29 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(VirtualCall call) {
 		call.setEnclosingScope(getCurrentTable());
-//		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
-			if ( call.isExternal() )
-				call.getLocation().accept(this);
-			for ( Expression exp : call.getArguments() )
-				exp.accept(this);
-//		}
+
+		// propagating to the location and arguments
+		if ( call.isExternal() )
+			call.getLocation().accept(this);
+		for ( Expression exp : call.getArguments() )
+			exp.accept(this);
+		
+		// Scope checking
 		if ( call.isExternal() ) {
-//			SymbolTable classTable = call.getLocation().getEnclosingScope();
-			String callLocationName = ((VariableLocation)call.getLocation()).getName();
-			SymbolTable classTable = TypeTable.getClassSymTab(getCurrentTable().lookup(callLocationName).getType().getName());
-			if ( classTable.lookup(call.getName()) == null ){
+			SymbolTable classTable = call.getLocation().getEnclosingScope();
+			Symbol methodSym = classTable.lookup(call.getName());
+			if ( methodSym == null )
 				getUnresolved().put(call, currentTable);
-				return null;
+			else if ( methodSym.isStatic() ){
+				errorHandler(new SemanticError(call.getLine(), "Cannot call static method: "+call.getName()+", as a virtual method."));				 
 			}
-			if( classTable.lookup(call.getName()).isStatic())
-				errorHandler(new SemanticError(call.getLine(), "calling a static function from an external call"));
-		}
-		else{ 
-			if ( currentTable.lookup(call.getName()) == null )
+		} else  {
+			Symbol methodSymbol = currentTable.lookup(call.getName());
+			if ( methodSymbol == null )
 				getUnresolved().put(call, currentTable);
-			if( currentTable.lookup(call.getName()).isStatic()){
-				errorHandler(new SemanticError(call.getLine(), "calling a static function within a virtual call"));
-			}
+			else if ( methodSymbol.isStatic() ) 
+				errorHandler(new SemanticError(call.getLine(), "Cannot call static method: "+call.getName()+", as a virtual method."));
 		}
-		
-		
-		
 		return null;
 	}
 
