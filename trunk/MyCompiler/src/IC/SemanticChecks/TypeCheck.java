@@ -205,7 +205,7 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(StaticCall call) {
-		// TODO Auto-generated method stub
+		// TODO
 		return null;
 	}
 

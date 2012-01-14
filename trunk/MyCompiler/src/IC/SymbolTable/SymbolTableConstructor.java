@@ -3,6 +3,7 @@ package IC.SymbolTable;
 import java.util.HashMap;
 import java.util.Map;
 
+import IC.DataTypes;
 import IC.ICVoid;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
@@ -242,13 +243,25 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			table.setParentSymbolTable(currentTable);
 			String thisTypeName = getCurrentTable().getId();
 			setCurrentTable(table);
-			Type thisType;
+			
+			// Add 'this' entry
 			try {
-				thisType = TypeTable.getUserType(thisTypeName);
+				Type thisType = TypeTable.getUserType(thisTypeName);
 				table.insertSymbol(new Symbol("this", thisType, Kind.AUTOMATIC, method.getLine()));
 			} catch (SemanticError e) {
 				errorHandler(e);
 			}
+			
+			// If necessary add '$ret' entry
+			try {
+				Type retType = TypeTable.astType(method.getType());
+				if ( retType != TypeTable.voidType ){
+						table.insertSymbol(new Symbol("$ret", retType, Kind.AUTOMATIC, method.getLine()));
+				}
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+				
 			for ( Formal f : method.getFormals() ){
 				f.accept(this);
 			}
@@ -291,6 +304,17 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			table.setParentSymbolTable(getGlobal());
 			SymbolTable oldCurrentTable = getCurrentTable();
 			setCurrentTable(table);
+
+			// If necessary add '$ret' entry
+			try {
+				Type retType = TypeTable.astType(method.getType());
+				if ( retType != TypeTable.voidType ){
+						table.insertSymbol(new Symbol("$ret", retType, Kind.AUTOMATIC, method.getLine()));
+				}
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+
 			for ( Formal f : method.getFormals() ){
 				f.accept(this);
 			}
@@ -323,6 +347,17 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			table.setParentSymbolTable(getGlobal());
 			SymbolTable oldCurrentTable = getCurrentTable();
 			setCurrentTable(table);
+
+			// If necessary add '$ret' entry
+			try {
+				Type retType = TypeTable.astType(method.getType());
+				if ( retType != TypeTable.voidType ){
+						table.insertSymbol(new Symbol("$ret", retType, Kind.AUTOMATIC, method.getLine()));
+				}
+			} catch (SemanticError e) {
+				errorHandler(e);
+			}
+
 			for ( Formal f : method.getFormals() ){
 				f.accept(this);
 			}
