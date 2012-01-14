@@ -1,5 +1,8 @@
 package IC.SemanticChecks;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import IC.ICVoid;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
@@ -44,6 +47,8 @@ import IC.Types.TypeTable;
 
 public class TypeCheck implements Visitor {
 
+	private List<SymbolTable> scopeStack = new LinkedList<>();
+	
 	@Override
 	public Object visit(Program program) {
 		for (ICClass icClass : program.getClasses())
@@ -53,8 +58,10 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(ICClass icClass) {
+		pushScope(icClass.getEnclosingScope());
 		for (Method method : icClass.getMethods())
 			method.accept(this);
+		popScope();
 		return null;
 	}
 
@@ -66,15 +73,19 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(VirtualMethod method) {
+		pushScope(method.getEnclosingScope());
 		for (Statement statement : method.getStatements())
 			statement.accept(this);
+		popScope();
 		return null;
 	}
 
 	@Override
 	public Object visit(StaticMethod method) {
+		pushScope(method.getEnclosingScope());
 		for (Statement statement : method.getStatements())
 			statement.accept(this);
+		popScope();
 		return null;
 	}
 
@@ -124,6 +135,8 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(If ifStatement) {
+		if ( ifStatement.getCondition().accept(this) != TypeTable.boolType )
+			typeError(ifStatement.getLine(), "if statment must have boolean type as a condition");
 		ifStatement.getOperation().accept(this);
 		if ( ifStatement.hasElse() )
 			ifStatement.getElseOperation().accept(this);
@@ -152,9 +165,10 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(StatementsBlock statementsBlock) {
+		pushScope(statementsBlock.getEnclosingScope());
 		for (Statement statement : statementsBlock.getStatements())
 			statement.accept(this);
-		
+		popScope();
 		return null;
 	}
 
@@ -172,7 +186,7 @@ public class TypeCheck implements Visitor {
 			SymbolTable leftSymTab = TypeTable.getClassSymTab(leftType.getName());
 			locSym = leftSymTab.lookup(location.getName()); // will not be null because of scope check
 		} else {
-			locSym = location.getEnclosingScope().lookup(location.getName());// will not be null because of scope check
+			locSym = getCurrentScope().lookup(location.getName());// will not be null because of scope check
 		}
 		return locSym.getType();
 	}
@@ -273,5 +287,16 @@ public class TypeCheck implements Visitor {
 		System.exit(1);
 	}
 
+	private void popScope() {
+		scopeStack.remove(0);
+	}
+
+	private void pushScope(SymbolTable scope) {
+		scopeStack.add(0, scope);
+	}
+
+	public SymbolTable getCurrentScope() {
+		return scopeStack.get(0);
+	}
 
 }
