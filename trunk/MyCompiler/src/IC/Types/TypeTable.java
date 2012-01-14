@@ -16,9 +16,9 @@ import IC.SymbolTable.SymbolTable;
 
 public class TypeTable {
 	// Maps element types to array types\
-	public static Map<String, ArrayType> uniqueArrayTypes = new HashMap<>();
-	public static Map<String, ClassType> uniqueClassTypes = new HashMap<>();
-	public static Map<String, MethodType> uniqueMethodTypes = new HashMap<>();
+	private static Map<String, ArrayType> uniqueArrayTypes = new HashMap<>();
+	private static Map<String, ClassType> uniqueClassTypes = new HashMap<>();
+	private static Map<String, MethodType> uniqueMethodTypes = new HashMap<>();
 	
 	public static Type boolType = new BoolType();
 	public static Type intType = new IntType();
