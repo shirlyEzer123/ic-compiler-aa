@@ -12,7 +12,7 @@ public abstract class Type {
 		this.ID = NextID++;
 	}
 
-	boolean subtypeof(Type t) {
+	public boolean subtypeof(Type t) {
 		return (this == t);
 	}
 

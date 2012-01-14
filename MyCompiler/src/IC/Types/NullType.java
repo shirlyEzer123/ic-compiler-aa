@@ -6,7 +6,7 @@ public class NullType extends Type {
 	}
 	
 	@Override
-	boolean subtypeof(Type t) {
+	public boolean subtypeof(Type t) {
 		
 		if( (t == TypeTable.intType) ||
 				(t == TypeTable.boolType ) )

@@ -60,6 +60,20 @@ public class TypeTable {
 		return uniqueArrayTypes.get(arrt.getName());
 	}
 
+	public static Type literalType( IC.LiteralTypes type ){
+		switch( type ) {
+		case FALSE:
+		case TRUE:
+			return boolType;
+		case INTEGER:
+			return intType;
+		case STRING:
+			return stringType;
+		case NULL:
+			return nullType;
+		}
+		return null;
+	}
 	public static Type astType(IC.AST.Type type) throws SemanticError {
 		// TODO : NULL stuff
 		Type result = null;
