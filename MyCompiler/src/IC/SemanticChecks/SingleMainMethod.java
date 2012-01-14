@@ -24,10 +24,10 @@ public class SingleMainMethod {
 				throw new SemanticError(sm.getLine(),
 						"program can only contain one 'main' method");
 			}
-		} else { //recursively check child symbol tables
-			for (SymbolTable childSymbolTable : st.getChilds()) {
-				checkForSingleMain(childSymbolTable);
-			}
+		} 
+		//recursively check child symbol tables
+		for (SymbolTable childSymbolTable : st.getChilds()) {
+			checkForSingleMain(childSymbolTable);
 		}
 	}
 
