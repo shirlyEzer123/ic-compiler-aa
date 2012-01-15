@@ -59,8 +59,11 @@ public class TypeCheck implements Visitor {
 
 	private List<SymbolTable> scopeStack = new LinkedList<>();
 
+	private SymbolTable libraryTable = null;
+	
 	@Override
 	public Object visit(Program program) {
+		setLibraryTable(program.getLibrary().getEnclosingScope());
 		for (ICClass icClass : program.getClasses())
 			icClass.accept(this);
 		return null;
@@ -266,13 +269,27 @@ public class TypeCheck implements Visitor {
 	@Override
 	public Object visit(StaticCall call) {
 		
+		MethodType mt;
+		if ( call.getClassName().equals("Library")) {
+			mt = (MethodType) getLibraryTable().lookup(call.getName()).getType();
+		}
+		else {
 		// Scope checking assures us that this will work.
-		MethodType mt = (MethodType) TypeTable.getClassSymTab(call.getClassName())
-				.lookup(call.getName()).getType();
+			mt = (MethodType) TypeTable.getClassSymTab(call.getClassName())
+					.lookup(call.getName()).getType();
+		}
 		
 		checkMethodType(call, mt);
 		
 		return mt.getReturnType();
+	}
+
+	private SymbolTable getLibraryTable() {
+		return libraryTable;
+	}
+
+	public void setLibraryTable(SymbolTable libraryTable) {
+		this.libraryTable = libraryTable;
 	}
 
 	@Override

@@ -1,0 +1,4 @@
+Parsed ..\test\libic.sig successfully!
+Parsed ..\test\IlegalPrograms\bad_scope_2.ic successfully!
+
+semantic error at line 9: Cannot call static method: sf, as a virtual method.
