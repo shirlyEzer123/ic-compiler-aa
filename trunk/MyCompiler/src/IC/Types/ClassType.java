@@ -4,6 +4,11 @@ import IC.AST.ICClass;
 import IC.SemanticChecks.SemanticError;
 import IC.SymbolTable.SymbolTable;
 
+/**
+ * The type of user classes in the program
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class ClassType extends Type {
 	private ICClass classAST;
 	private ClassType parent = null;
@@ -24,18 +29,34 @@ public class ClassType extends Type {
 		super(className);
 	}
 
+	/**
+	 * 
+	 * @return the AST class object of this class
+	 */
 	public ICClass getClassAST() {
 		return classAST;
 	}
 
+	/**
+	 * Sets the AST class object of this class
+	 * @param classAST the AST class object of this class
+	 */
 	public void setClassAST(ICClass classAST) {
 		this.classAST = classAST;
 	}
 
+	/**
+	 * 
+	 * @return parent class type of this class type, null if no such class
+	 */
 	public ClassType getParent() {
 		return parent;
 	}
 
+	/**
+	 * Sets the parent class for this class type
+	 * @param parent The parent class for this class type
+	 */
 	public void setParent(ClassType parent) {
 		this.parent = parent;
 	}
@@ -51,10 +72,18 @@ public class ClassType extends Type {
 			return false;
 	}
 
+	/**
+	 * 
+	 * @return the class symbol table
+	 */
 	public SymbolTable getSymbolTable() {
 		return symbolTable;
 	}
 
+	/**
+	 * Sets the class symbol table
+	 * @param symbolTable the class symbol table
+	 */
 	public void setSymbolTable(SymbolTable symbolTable) {
 		this.symbolTable = symbolTable;
 	}

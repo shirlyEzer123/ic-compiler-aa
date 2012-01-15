@@ -122,7 +122,7 @@ public class Compiler {
 			BreakAndContCheck bacc = new BreakAndContCheck();
 			bacc.visit(root);
 			
-			// Type check;
+			// Type check
 			TypeCheck tc = new TypeCheck();
 			tc.visit(root);
 			

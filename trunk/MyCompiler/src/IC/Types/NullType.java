@@ -1,5 +1,10 @@
 package IC.Types;
 
+/**
+ * The type of null in the program
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class NullType extends Type {
 	public NullType() {
 		super("null");

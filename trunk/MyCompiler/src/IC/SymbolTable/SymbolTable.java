@@ -8,6 +8,11 @@ import java.util.Map;
 
 import IC.SemanticChecks.SemanticError;
 
+/**
+ * A SymbolTable object hold a symbol table or a scope in the program compiling process.
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class SymbolTable {
 	/** map from String to Symbol **/
 	private Map<String,Symbol> entries;
@@ -22,6 +27,11 @@ public class SymbolTable {
 		setKind(kind);
 	}
 
+	/**
+	 * Adds an entry to the symbol table
+	 * @param sym The symbol to add
+	 * @throws SemanticError if there's a conflict.
+	 */
 	public void insertSymbol(Symbol sym) throws SemanticError{
 		if ( entries.containsKey( sym.getId() ) ){
 			throw new SemanticError(sym.getLine(), "Redecleration of symbol " + sym.getId());
@@ -62,22 +72,40 @@ public class SymbolTable {
 			return null;
 	}
 
+	/**
+	 * @return The parent symbol table if it exists, null otherwise
+	 */
 	public SymbolTable getParentSymbolTable() {
 		return parentSymbolTable;
 	}
 
+	/**
+	 * Sets a parent symbol table
+	 * @param parentSymbolTable the parent symbol table.
+	 */
 	public void setParentSymbolTable(SymbolTable parentSymbolTable) {
 		this.parentSymbolTable = parentSymbolTable;
 	}
 
+	/**
+	 * ID getter
+	 * @return the table ID
+	 */
 	public String getId() {
 		return id;
 	}
 
+	/**
+	 * ID setter
+	 * @param id the table new ID
+	 */
 	public void setId(String id) {
 		this.id = id;
 	}
 
+	/**
+	 * @return A list of the table children
+	 */
 	public List<SymbolTable> getChilds() {
 		return childs;
 	}
@@ -210,10 +238,18 @@ public class SymbolTable {
 
 	}
 
+	/**
+	 * @return The kind of the symbol table
+	 * @see Kind
+	 */
 	public Kind getKind() {
 		return kind;
 	}
 
+	/**
+	 * Sets the kind of the symbol table.
+	 * @param kind the new kind for the symbol table.
+	 */
 	public void setKind(Kind kind) {
 		this.kind = kind;
 	}

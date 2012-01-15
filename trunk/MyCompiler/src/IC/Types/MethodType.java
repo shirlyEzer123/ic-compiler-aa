@@ -1,5 +1,10 @@
 package IC.Types;
 
+/**
+ * The type of methods in the program
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class MethodType extends Type {
 	
 	public MethodType(Type[] paramTypes, Type returnType) {
@@ -13,18 +18,34 @@ public class MethodType extends Type {
 	private Type returnType;
 	private boolean libraryMethod = false;
 	
+	/**
+	 * 
+	 * @return an array of the method parameter types
+	 */
 	public Type[] getParamTypes() {
 		return paramTypes;
 	}
 
+	/**
+	 * Sets the parameter types array
+	 * @param paramTypes the parameter types array
+	 */
 	public void setParamTypes(Type[] paramTypes) {
 		this.paramTypes = paramTypes;
 	}
 
+	/**
+	 * 
+	 * @return the return type of this method
+	 */
 	public Type getReturnType() {
 		return returnType;
 	}
 
+	/**
+	 * Sets the return type of this method
+	 * @param returnType the return type of this method
+	 */
 	public void setReturnType(Type returnType) {
 		this.returnType = returnType;
 	}
@@ -45,10 +66,18 @@ public class MethodType extends Type {
 		return str;
 	}
 
+	/**
+	 * 
+	 * @return true if this method is a library method
+	 */
 	public boolean isLibraryMethod() {
 		return libraryMethod;
 	}
 
+	/**
+	 * Sets the method  library property
+	 * @param libraryMethod true => this method is a library method
+	 */
 	public void setLibraryMethod(boolean libraryMethod) {
 		this.libraryMethod = libraryMethod;
 	}
