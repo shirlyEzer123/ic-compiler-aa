@@ -3,6 +3,7 @@ package IC;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
+import IC.Parser.LexicalError;
 import IC.Parser.LibraryParser;
 import IC.Parser.Lexer;
 import IC.Parser.Parser;
@@ -39,7 +40,7 @@ public class Compiler {
     {
     	
 		if (args.length == 0) {
-			System.out.println("Error: Missing input file argument!");
+			System.err.println("Error: Missing input file argument!");
 			printUsage();
 			System.exit(-1);
 		}
@@ -66,7 +67,7 @@ public class Compiler {
 		try {
 			libFile = new FileReader(libFileName);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			System.err.println("File not found: " + libFileName);
 		}
 		Lexer libscanner = new Lexer(libFile);
 		LibraryParser libparser = new LibraryParser(libscanner);
@@ -76,7 +77,7 @@ public class Compiler {
 			if(printLibrary)
 				System.out.println("Parsed " + libFileName + " successfully!");
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 			return;
 		}
 		Library libRoot = (Library) libSym.value;
@@ -90,7 +91,7 @@ public class Compiler {
 		try {
 			txtFile = new FileReader(args[0]);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			System.err.println("File not found: " + args[0]);
 		}
 		Lexer scanner = new Lexer(txtFile);
 		Parser parser = new Parser(scanner);
@@ -103,34 +104,40 @@ public class Compiler {
 			if ( printAST ) {
 				PrettyPrinter printer = new PrettyPrinter(args[0]);
 				System.out.println( printer.visit(root) );
-			}	
+			}
+			
+			// Build symbol tables
 			SymbolTableConstructor stc = new SymbolTableConstructor();
 			SymbolTable st = (SymbolTable) stc.visit(root);
-		
-			SingleMainMethod smm = new SingleMainMethod();
-			smm.checkForSingleMain(root);
-			
-			BreakAndContCheck bacc = new BreakAndContCheck();
-			bacc.visit(root);
-			
-			TypeCheck tc = new TypeCheck();
-			tc.visit(root);
-			
-			MethodReturnCheck mrc = new MethodReturnCheck();
-			mrc.checkMethodsReturn(root);
-			
 			if(dumpSymTab){
 				st.printSymbolTable("Global",st, args[0], printLibrary);
 				TypeTable.printTable(args[0], printLibrary);
 			}
+			
+			// Check for single main
+			SingleMainMethod smm = new SingleMainMethod();
+			smm.checkForSingleMain(root);
+			
+			// Check that break and continue are only in loops
+			BreakAndContCheck bacc = new BreakAndContCheck();
+			bacc.visit(root);
+			
+			// Type check;
+			TypeCheck tc = new TypeCheck();
+			tc.visit(root);
+			
+			// Check that a non-void method has return on all execution paths
+			MethodReturnCheck mrc = new MethodReturnCheck();
+			mrc.checkMethodsReturn(root);
+			
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());
 		} catch (SemanticError e) {
 			System.err.println(e.getMessage());
-
+		} catch ( LexicalError e) {
+			System.err.println(e.getMessage());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 		
 		

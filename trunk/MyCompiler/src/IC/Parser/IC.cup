@@ -35,7 +35,7 @@ parser code  {:
 	
 	public void syntax_error(Symbol s) {
 		Token tok = (Token) s;
-		System.out.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok);
+		System.err.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok);
 	}
 	
 :}

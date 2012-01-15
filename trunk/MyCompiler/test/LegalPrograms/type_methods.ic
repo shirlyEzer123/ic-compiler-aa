@@ -2,6 +2,7 @@ class A {
 	static void main(string[] args) {
 		A a;
 		a.typechecker(a);
+		return;
 	}
 	
 	static string sfunc(int n, boolean bool, A a, B b) {
