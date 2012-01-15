@@ -3,8 +3,6 @@ package IC.SemanticChecks;
 import java.util.LinkedList;
 import java.util.List;
 
-import sun.org.mozilla.javascript.internal.ast.IfStatement;
-
 import IC.AST.ICClass;
 import IC.AST.If;
 import IC.AST.Method;

@@ -603,10 +603,12 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(This thisExpression) {
-		thisExpression.setEnclosingScope(getCurrentTable());
-		if ( getCurrentTable().lookup("this") == null )
+		Symbol thisSym = getCurrentTable().lookup("this");
+		if ( thisSym == null )
 			errorHandler(new SemanticError(thisExpression.getLine(), "'this' object is undefined here"));
-		return null;
+		SymbolTable thisTypeSymTab = TypeTable.getClassSymTab(thisSym.getType().getName()); 
+		thisExpression.setEnclosingScope(thisTypeSymTab);
+		return thisTypeSymTab;
 	}
 
 	@Override

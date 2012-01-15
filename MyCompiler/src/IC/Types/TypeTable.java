@@ -1,11 +1,8 @@
 package IC.Types;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
 import IC.ICVoid;
 import IC.AST.Formal;
 import IC.AST.ICClass;
@@ -16,9 +13,9 @@ import IC.SymbolTable.SymbolTable;
 
 public class TypeTable {
 	// Maps element types to array types\
-	private static Map<String, ArrayType> uniqueArrayTypes = new HashMap<>();
-	private static Map<String, ClassType> uniqueClassTypes = new HashMap<>();
-	private static Map<String, MethodType> uniqueMethodTypes = new HashMap<>();
+	private static Map<String, ArrayType> uniqueArrayTypes = new LinkedHashMap<>();
+	private static Map<String, ClassType> uniqueClassTypes = new LinkedHashMap<>();
+	private static Map<String, MethodType> uniqueMethodTypes = new LinkedHashMap<>();
 	
 	public static Type boolType = new BoolType();
 	public static Type intType = new IntType();
