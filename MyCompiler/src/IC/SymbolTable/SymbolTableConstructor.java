@@ -217,7 +217,10 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(VirtualMethod method) {
 		if ( ! isFieldMethodInserted ) {
+			
+			
 			MethodType mt = TypeTable.methodType(method);
+			
 			Symbol prevDec = getCurrentTable().lookup(method.getName());
 			if ( prevDec != null ) { 
 				// mothod has been declared in the class hierarchy. verify correct overriding
@@ -277,6 +280,9 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(StaticMethod method) {
 		if ( ! isFieldMethodInserted ) {
+//			boolean libMethod = getCurrentTable().getId().equals("Library");
+//			if(libMethod)
+//				mt.setLibraryMethod(true);
 			Symbol fSymbol = null;
 			MethodType mt = TypeTable.methodType(method);
 			Symbol prevDec = getCurrentTable().lookup(method.getName());
@@ -333,6 +339,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			Symbol fSymbol = null;
 			try {
 				MethodType mt = TypeTable.methodType(method);
+				mt.setLibraryMethod(true);
 				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
 				fSymbol.setStatic(true);
 				getCurrentTable().insertSymbol(fSymbol);		

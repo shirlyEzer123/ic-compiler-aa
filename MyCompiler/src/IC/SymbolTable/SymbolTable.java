@@ -82,25 +82,40 @@ public class SymbolTable {
 		return childs;
 	}
 
-
-	public void printSymbolTable(String name, SymbolTable st, String libFileName) {
-		//System.out.print(name +" Symbol Table");
+	boolean printLibrary = false;
+	
+	public void printSymbolTable(String name, SymbolTable st, String libFileName, boolean printLibrary) {
+		
+		this.printLibrary = printLibrary;
+		
 		if(st.id == "Global"){
 			System.out.println("Global Symbol Table: " + libFileName);
 			for(String e : entries.keySet()){
+				if(!printLibrary){
+					if(e.equals("Library"))
+						continue;
+				}
 				System.out.println("\tClass: " + e);
 			}
 			System.out.print("Children tables: ");
 			for ( Iterator<SymbolTable> iter = childs.iterator(); iter.hasNext(); ){
 				SymbolTable syta = iter.next();
+				if(!printLibrary){
+					if(syta.getId().equals("Library"))
+						continue;
+				}
 				System.out.print(syta.id);
-				if ( iter.hasNext() )
+				if ( iter.hasNext())
 					System.out.print(", ");
 			}
 			System.out.println("");
 			System.out.println();
 		}
 		for(SymbolTable syta : st.childs){
+			if(!printLibrary){
+				if(syta.getId().equals("Library"))
+					continue;
+			}
 			printTableName(syta);
 			printFields(syta);
 			printStaticMethods(syta);
@@ -114,7 +129,7 @@ public class SymbolTable {
 
 		for ( Iterator<SymbolTable> iter = st.childs.iterator(); iter.hasNext(); ){
 			SymbolTable syta = iter.next();
-			printSymbolTable(syta.getId(), syta, null);
+			printSymbolTable(syta.getId(), syta, null, printLibrary);
 		}
 
 	}

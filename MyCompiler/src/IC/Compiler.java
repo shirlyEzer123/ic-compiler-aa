@@ -47,10 +47,12 @@ public class Compiler {
 		// handle arguments parsing
 		boolean printAST = false;
 		boolean dumpSymTab = false;
+		boolean printLibrary = false;
 		String libFileName = "libic.sig";
 		for ( int i = 1; i < args.length; i++) {
 			if ( ( args[i].charAt(0) == '-') && (args[i].charAt(1) == 'L') ) {
 				libFileName = args[i].substring(2);
+				printLibrary = true;
 			} else if ( args[i].equals("-print-ast") ){
 				printAST = true;
 			}
@@ -71,7 +73,8 @@ public class Compiler {
 		Symbol libSym = null;
 		try {
 			libSym = libparser.parse();
-			System.out.println("Parsed " + libFileName + " successfully!");
+			if(printLibrary)
+				System.out.println("Parsed " + libFileName + " successfully!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -117,8 +120,8 @@ public class Compiler {
 			mrc.checkMethodsReturn(root);
 			
 			if(dumpSymTab){
-				st.printSymbolTable("Global",st, args[0]);
-				TypeTable.printTable(args[0]);
+				st.printSymbolTable("Global",st, args[0], printLibrary);
+				TypeTable.printTable(args[0], printLibrary);
 			}
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());

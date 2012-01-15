@@ -69,8 +69,10 @@ public class TypeCheck implements Visitor {
 	@Override
 	public Object visit(ICClass icClass) {
 		pushScope(icClass.getEnclosingScope());
-		for (Method method : icClass.getMethods())
+		
+		for (Method method : icClass.getMethods()){
 			method.accept(this);
+		}
 		popScope();
 		return null;
 	}
