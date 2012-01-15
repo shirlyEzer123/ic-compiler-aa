@@ -3,7 +3,6 @@ package IC.SymbolTable;
 import java.util.HashMap;
 import java.util.Map;
 
-import IC.DataTypes;
 import IC.ICVoid;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
@@ -48,6 +47,12 @@ import IC.Types.MethodType;
 import IC.Types.Type;
 import IC.Types.TypeTable;
 
+/**
+ * A visitor implementation that builds the symbol table for the program compilation.
+ * Simultaneously it also does the scope checking.
+ *  
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	private SymbolTable currentTable;

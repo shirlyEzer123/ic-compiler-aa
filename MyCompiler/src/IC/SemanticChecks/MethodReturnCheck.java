@@ -15,8 +15,18 @@ import IC.SymbolTable.SymbolTable;
 import IC.Types.MethodType;
 import IC.Types.TypeTable;
 
+/**
+ * Checks that there is a return statement in all foreseeable execution paths
+ * (if necessary) 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class MethodReturnCheck {
 	
+	/**
+	 * Checks for return statement in the program's methods.
+	 * @param program The program to check.
+	 * @throws SemanticError if a foreseeable execution path is found without a return statement.
+	 */
 	public void checkMethodsReturn(Program program) throws SemanticError{
 		for ( ICClass icClass : program.getClasses() ){
 			SymbolTable classST = icClass.getEnclosingScope();
@@ -38,6 +48,11 @@ public class MethodReturnCheck {
 		}
 	}
 
+	/**
+	 * Does the checking over a statement list
+	 * @param statements list of statements to go through
+	 * @return true if a return is found in every foreseeable execution path
+	 */
 	private boolean checkForReturn(List<Statement> statements) {
 		boolean foundReturn = false;
 		for(Statement s : statements){

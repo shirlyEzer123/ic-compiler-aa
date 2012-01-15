@@ -38,6 +38,12 @@ import IC.AST.VirtualMethod;
 import IC.AST.Visitor;
 import IC.AST.While;
 
+/**
+ * A visitor implementation that checks that a break or continue statements
+ * appear only in the body of while loops
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class BreakAndContCheck implements Visitor{
 	
 

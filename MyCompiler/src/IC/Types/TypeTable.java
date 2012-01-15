@@ -12,16 +12,30 @@ import IC.AST.UserType;
 import IC.SemanticChecks.SemanticError;
 import IC.SymbolTable.SymbolTable;
 
+/**
+ * This is a singleton containing the type table for the compilation process.
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class TypeTable {
 	// Maps element types to array types\
 	private static Map<String, ArrayType> uniqueArrayTypes = new LinkedHashMap<>();
 	private static Map<String, ClassType> uniqueClassTypes = new LinkedHashMap<>();
 	private static Map<String, MethodType> uniqueMethodTypes = new LinkedHashMap<>();
 	
+	/** Boolean type */
 	public static Type boolType = new BoolType();
+
+	/** Integer type */
 	public static Type intType = new IntType();
+
+	/** String type */
 	public static Type stringType = new StringType();
+
+	/** Void type */
 	public static Type voidType = new VoidType();
+
+	/** Null type */
 	public static Type nullType = new NullType();
 	
 	private TypeTable() {
@@ -29,6 +43,11 @@ public class TypeTable {
 	}
 
 
+	/**
+	 * adds a new class to the table
+	 * @param icClass the new class
+	 * @throws SemanticError if a collision is detected
+	 */
 	public static void addUserType(ICClass icClass) throws SemanticError{
 		String className = icClass.getName();
 		if ( uniqueClassTypes.containsKey(className) ){
@@ -37,6 +56,10 @@ public class TypeTable {
 		uniqueClassTypes.put(className, new ClassType(icClass));
 	}
 	
+	/**
+	 * @param className name of a class
+	 * @return The unique class type object or null if the class wasn't found
+	 */
 	public static ClassType getUserType(String className){
 		if ( uniqueClassTypes.containsKey(className) )
 			return uniqueClassTypes.get(className);
@@ -44,7 +67,12 @@ public class TypeTable {
 	}
 	
 
-	// Returns unique array type object
+	/**
+	 * 
+	 * @param elemType the array type
+	 * @param dim array dimension
+	 * @return unique array type object
+	 */
 	public static ArrayType arrayType(Type elemType, int dim) {
 		ArrayType arrt = null;
 		if ( dim > 1 ){
@@ -60,6 +88,11 @@ public class TypeTable {
 		return uniqueArrayTypes.get(arrt.getName());
 	}
 
+	/**
+	 * 
+	 * @param type The literal type needed
+	 * @return The unique type-table type of the literal 
+	 */
 	public static Type literalType( IC.LiteralTypes type ){
 		switch( type ) {
 		case FALSE:
@@ -74,6 +107,13 @@ public class TypeTable {
 		}
 		return null;
 	}
+	
+	/**
+	 * translates an AST type to a type-table type
+	 * @param type the AST type
+	 * @return a type table entry
+	 * @throws SemanticError should never throw this, but check anyway :)
+	 */
 	public static Type astType(IC.AST.Type type) throws SemanticError {
 		// TODO : NULL stuff
 		Type result = null;
@@ -107,7 +147,11 @@ public class TypeTable {
 		return result;
 	}
 	
-//	public static MethodType methodType(Type[] paramTypes, Type ret) {
+	/**
+	 * 
+	 * @param astMethod AST method object
+	 * @return the method unique type (including return value)
+	 */
 	public static MethodType methodType( IC.AST.Method astMethod ){
 		List<Formal> fLst = astMethod.getFormals();
 		Type[] paramTypes = new Type[fLst.size()];
@@ -129,6 +173,11 @@ public class TypeTable {
 		}
 	}
 
+	/**
+	 * Prints the type table
+	 * @param filename IC program file name
+	 * @param printLibrary Should the library method types also be printed?
+	 */
 	public static void printTable(String filename, boolean printLibrary) {
 		String str = "Type Table: " + filename + "\n";
 		str += "\t" + intType.getID() + ": Primitive type: " + intType + "\n";
@@ -161,6 +210,11 @@ public class TypeTable {
 	}
 
 
+	/**
+	 * 
+	 * @param className name of a class
+	 * @return the SymbolTable of the named class.
+	 */
 	public static SymbolTable getClassSymTab(String className) {
 		if ( uniqueClassTypes.containsKey(className)) {
 			return uniqueClassTypes.get(className).getSymbolTable();

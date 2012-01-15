@@ -55,6 +55,11 @@ import IC.Types.ClassType;
 import IC.Types.Type;
 import IC.Types.TypeTable;
 
+/**
+ * A visitor implementation to check that all the static types match in the program
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class TypeCheck implements Visitor {
 
 	private List<SymbolTable> scopeStack = new LinkedList<>();
