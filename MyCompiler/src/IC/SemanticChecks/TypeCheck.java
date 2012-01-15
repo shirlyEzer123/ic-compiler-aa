@@ -140,12 +140,33 @@ public class TypeCheck implements Visitor {
 
 	@Override
 	public Object visit(Return returnStatement) {
+		Symbol retSym = returnStatement.getEnclosingScope().lookup("$ret");
+		
+		if(returnStatement.getValue() == null){ //empty return statement
+			if(retSym != null){
+				typeError(returnStatement.getLine(), "empty return error");
+				return null;
+			}
+			else{
+				return null;
+			}
+		}
+		
+		if(retSym == null) { //void function
+			if(returnStatement.getValue() != null){
+				typeError(returnStatement.getLine(), "void function cant have return values");
+				return null;
+			}
+		}
+		Type funcRetType = retSym.getType();
+		
+		
 		Type retExpType = (Type) returnStatement.getValue().accept(this);
 		Symbol sm = returnStatement.getEnclosingScope().lookup("$ret");
 		if(sm == null){
 			typeError(returnStatement.getLine(), "void functions can't have a return statement");
 		}
-		Type funcRetType = returnStatement.getEnclosingScope().lookup("$ret").getType();
+		
 		if(retExpType != funcRetType)
 			typeError(returnStatement.getLine(), "return type needs to be of type " + funcRetType);
 		return null;
