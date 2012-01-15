@@ -6,6 +6,7 @@ import java.util.Map;
 import IC.ICVoid;
 import IC.AST.Formal;
 import IC.AST.ICClass;
+import IC.AST.Library;
 import IC.AST.PrimitiveType;
 import IC.AST.UserType;
 import IC.SemanticChecks.SemanticError;
@@ -166,5 +167,4 @@ public class TypeTable {
 		}
 		return null;
 	}
-	
 }

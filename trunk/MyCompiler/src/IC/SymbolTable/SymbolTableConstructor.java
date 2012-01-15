@@ -52,6 +52,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	private SymbolTable currentTable;
 	private SymbolTable global;
+	private SymbolTable libraryTable;
 	private Map<Call, SymbolTable> unresolved = new HashMap<>();
 	//private boolean unresCheck = false;
 	private boolean isFieldMethodInserted = false;
@@ -88,14 +89,13 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 				errorHandler(e);
 			}
 		}
-		
 		// Build class symbol tables
 		for ( ICClass c : program.getClasses() ){
 			c.accept(this);
 		}
 		
 		// Add the library symbol table
-		program.getLibrary().accept(this);
+		setLibraryTable( (SymbolTable) program.getLibrary().accept(this) );
 		
 		// Build symbol tables for methods and code-blocks + scope checking
 		isFieldMethodInserted = true;
@@ -544,18 +544,23 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(StaticCall call) {
 		call.setEnclosingScope(getCurrentTable());
-//		if ( ! isInCheckUnRes() ) { // in the second round of resolving forward ref. don't check arguments
-			for ( Expression exp : call.getArguments() )
-				exp.accept(this);
-//		}
-		
-		if ( getGlobal().lookup(call.getClassName()) == null ) {
-			//errorHandler(new SemanticError(call.getLine(), "Class not found: " + call.getClassName()));
-			getUnresolved().put(call, currentTable);
-			return null;
+		for ( Expression exp : call.getArguments() )
+			exp.accept(this);
+
+		SymbolTable classST;
+		if ( ! call.getClassName().equals( "Library" ) ) {
+			
+			if ( getGlobal().lookup(call.getClassName()) == null ) {
+				//errorHandler(new SemanticError(call.getLine(), "Class not found: " + call.getClassName()));
+				getUnresolved().put(call, currentTable);
+				return null;
+			}
+			classST = TypeTable.getClassSymTab(call.getClassName());
+			
+		} 
+		else {
+			classST = getLibraryTable();
 		}
-		
-		SymbolTable classST = TypeTable.getClassSymTab(call.getClassName());
 		
 		if ( (classST == null ) || (classST.lookup(call.getName()) == null) ) {
 			getUnresolved().put(call, currentTable);
@@ -708,6 +713,14 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	public void setUnresolved(Map<Call, SymbolTable> unresolved) {
 		this.unresolved = unresolved;
+	}
+
+	public SymbolTable getLibraryTable() {
+		return libraryTable;
+	}
+
+	public void setLibraryTable(SymbolTable libraryTable) {
+		this.libraryTable = libraryTable;
 	}
 
 }
