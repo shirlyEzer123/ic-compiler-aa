@@ -1,7 +1,7 @@
 package IC.SymbolTable;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ public class SymbolTable {
 
 	public SymbolTable(String id, Kind kind) {
 		this.setId(id);
-		entries = new HashMap<String,Symbol>();
+		entries = new LinkedHashMap<String,Symbol>();
 		setKind(kind);
 	}
 
