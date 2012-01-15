@@ -152,7 +152,7 @@ public class TypeTable {
 
 		for(String s : uniqueMethodTypes.keySet()){
 			MethodType mt = uniqueMethodTypes.get(s);
-			if(mt.isLibraryMethod())
+			if(mt.isLibraryMethod() && ( ! printLibrary ))
 				continue;
 			str += "\t" + mt.getID() + ": Method type: {" + mt + "}\n";
 		}
