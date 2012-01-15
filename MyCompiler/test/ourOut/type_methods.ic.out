@@ -118,7 +118,18 @@ Type Table: ..\test\LegalPrograms\type_methods.ic
 	28: Array type: int[]
 	8: Method type: {string[] -> void}
 	9: Method type: {int, boolean, A, B -> string}
+	11: Method type: {int -> void}
+	12: Method type: {string -> void}
+	13: Method type: {boolean -> void}
 	14: Method type: {A -> void}
 	15: Method type: {B -> void}
 	16: Method type: {A -> boolean}
+	17: Method type: { -> int}
+	18: Method type: { -> boolean}
+	24: Method type: { -> string}
+	26: Method type: {string, int -> int}
+	27: Method type: {int -> string}
+	29: Method type: {string -> int[]}
+	31: Method type: {int[] -> string}
+	32: Method type: {int -> int}
 

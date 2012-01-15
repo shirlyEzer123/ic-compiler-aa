@@ -89,6 +89,17 @@ Type Table: ..\test\LegalPrograms\scope_demonstration.ic
 	12: Array type: A[]
 	23: Array type: int[]
 	9: Method type: {string[] -> void}
+	10: Method type: { -> string}
 	11: Method type: { -> void}
 	13: Method type: {string -> int}
+	14: Method type: {string -> void}
+	16: Method type: {int -> void}
+	17: Method type: {boolean -> void}
+	18: Method type: { -> int}
+	20: Method type: { -> boolean}
+	21: Method type: {string, int -> int}
+	22: Method type: {int -> string}
+	24: Method type: {string -> int[]}
+	26: Method type: {int[] -> string}
+	27: Method type: {int -> int}
 

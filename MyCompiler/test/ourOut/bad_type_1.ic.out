@@ -1,7 +1,7 @@
 Parsed ..\test\libic.sig successfully!
-Parsed ..\test\LegalPrograms\library_methods.ic successfully!
+Parsed ..\test\IlegalPrograms\bad_type_1.ic successfully!
 
-Global Symbol Table: ..\test\LegalPrograms\library_methods.ic
+Global Symbol Table: ..\test\IlegalPrograms\bad_type_1.ic
 	Class: A
 Children tables: A, Library
 
@@ -27,12 +27,8 @@ Class Symbol Table: Library
 
 Method Symbol Table: main
 	Parameter: string[] args
-	Local variable: string s
-	Local variable: int i
-	Local variable: boolean b
-	Local variable: int[] a
 
-Type Table: ..\test\LegalPrograms\library_methods.ic
+Type Table: ..\test\IlegalPrograms\bad_type_1.ic
 	1: Primitive type: int
 	0: Primitive type: boolean
 	4: Primitive type: null

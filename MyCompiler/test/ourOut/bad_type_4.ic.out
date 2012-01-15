@@ -1,0 +1,4 @@
+Parsed ..\test\libic.sig successfully!
+Parsed ..\test\IlegalPrograms\bad_type_4.ic successfully!
+
+semantic error at line 7: Redecleration of symbol i
