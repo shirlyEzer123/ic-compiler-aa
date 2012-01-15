@@ -131,7 +131,7 @@ public class TypeTable {
 		}
 	}
 
-	public static void printTable(String filename) {
+	public static void printTable(String filename, boolean printLibrary) {
 		String str = "Type Table: " + filename + "\n";
 		str += "\t" + intType.getID() + ": Primitive type: " + intType + "\n";
 		str += "\t" + boolType.getID() + ": Primitive type: " + boolType + "\n";
@@ -154,6 +154,8 @@ public class TypeTable {
 
 		for(String s : uniqueMethodTypes.keySet()){
 			MethodType mt = uniqueMethodTypes.get(s);
+			if(mt.isLibraryMethod())
+				continue;
 			str += "\t" + mt.getID() + ": Method type: {" + mt + "}\n";
 		}
 

@@ -11,6 +11,7 @@ public class MethodType extends Type {
 
 	private Type[] paramTypes;
 	private Type returnType;
+	private boolean libraryMethod = false;
 	
 	public Type[] getParamTypes() {
 		return paramTypes;
@@ -42,5 +43,13 @@ public class MethodType extends Type {
 		str += " -> " + returnType.toString();
 		
 		return str;
+	}
+
+	public boolean isLibraryMethod() {
+		return libraryMethod;
+	}
+
+	public void setLibraryMethod(boolean libraryMethod) {
+		this.libraryMethod = libraryMethod;
 	}
 }
