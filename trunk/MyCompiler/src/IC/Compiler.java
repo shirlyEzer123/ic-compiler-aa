@@ -8,6 +8,7 @@ import IC.Parser.Lexer;
 import IC.Parser.Parser;
 import IC.Parser.SyntaxError;
 import IC.SemanticChecks.BreakAndContCheck;
+import IC.SemanticChecks.MethodReturnCheck;
 import IC.SemanticChecks.SemanticError;
 import IC.SemanticChecks.SingleMainMethod;
 import IC.SemanticChecks.TypeCheck;
@@ -111,6 +112,9 @@ public class Compiler {
 			
 			TypeCheck tc = new TypeCheck();
 			tc.visit(root);
+			
+			MethodReturnCheck mrc = new MethodReturnCheck();
+			mrc.checkMethodsReturn(root);
 			
 			if(dumpSymTab){
 				st.printSymbolTable("Global",st, args[0]);
