@@ -632,6 +632,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 
 	@Override
 	public Object visit(Length length) {
+		length.getArray().accept(this);
 		length.setEnclosingScope(getCurrentTable());
 		return null;
 	}

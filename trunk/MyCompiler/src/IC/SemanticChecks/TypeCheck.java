@@ -401,34 +401,38 @@ public class TypeCheck implements Visitor {
 		Type t1 = (Type) binaryOp.getFirstOperand().accept(this);
 		Type t2 = (Type) binaryOp.getSecondOperand().accept(this);
 
-		if (t1 == TypeTable.intType && t2 == TypeTable.intType) {
-			if (binaryOp.getOperator() == BinaryOps.GT
-					|| binaryOp.getOperator() == BinaryOps.GTE
-					|| binaryOp.getOperator() == BinaryOps.LT
-					|| binaryOp.getOperator() == BinaryOps.LTE) {
-				return TypeTable.boolType;
-			} else {
+		switch ( binaryOp.getOperator() ) {
+		// integer only comparisons
+		case GT:
+		case GTE:
+		case LT:
+		case LTE:
+			if ((t1 != TypeTable.intType) || (t2 != TypeTable.intType))
 				binaryOpError(binaryOp, t1, t2);
-			}
-		} else if (t1 == TypeTable.boolType && t2 == TypeTable.boolType) {
-			if (binaryOp.getOperator() == BinaryOps.LAND
-					|| binaryOp.getOperator() == BinaryOps.LOR) {
-				return TypeTable.boolType;
-			} else {
+			break;
+			
+		// boolean only operations
+		case LAND:
+		case LOR:
+			if ((t1 != TypeTable.boolType) || (t2 != TypeTable.boolType))
 				binaryOpError(binaryOp, t1, t2);
-			}
-		} else if (t1.subtypeof(t2) || t2.subtypeof(t1)) {
-			if (binaryOp.getOperator() == BinaryOps.EQUAL
-					|| binaryOp.getOperator() == BinaryOps.NEQUAL) {
-				return TypeTable.boolType;
-			} else {
+			break;
+		
+		// reference or primitive value comparison
+		case EQUAL:
+		case NEQUAL:
+			if ( ! (t1.subtypeof(t2) || t2.subtypeof(t1)) )
 				binaryOpError(binaryOp, t1, t2);
-			}
-		}
-		else {
+			break;
+		
+		// Should never get here
+		default:
 			binaryOpError(binaryOp, t1, t2);
+			break;
 		}
-		return null;
+		
+		// logical operation always return a boolean.
+		return TypeTable.boolType;
 	}
 
 	@Override

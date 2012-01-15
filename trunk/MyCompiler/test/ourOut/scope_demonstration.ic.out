@@ -47,6 +47,7 @@ Method Symbol Table: aFunc
 
 Method Symbol Table: vfunc
 	Local variable: int v
+Children tables: statement block in vfunc
 
 Statement Block Symbol Table ( located in main )
 	Local variable: boolean v
@@ -58,6 +59,18 @@ Statement Block Symbol Table ( located in statement block in main )
 Children tables: statement block in statement block in statement block in main
 
 Statement Block Symbol Table ( located in statement block in statement block in main )
+	Local variable: B v
+
+Statement Block Symbol Table ( located in vfunc )
+	Local variable: boolean v
+Children tables: statement block in statement block in vfunc
+
+Statement Block Symbol Table ( located in statement block in vfunc )
+	Local variable: A v
+	Local variable: B bObj
+Children tables: statement block in statement block in statement block in vfunc
+
+Statement Block Symbol Table ( located in statement block in statement block in vfunc )
 	Local variable: B v
 
 Method Symbol Table: sfunc
