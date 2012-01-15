@@ -24,6 +24,7 @@ class A {
 	}
 	
 	string aFunc() {
+		vfunc();
 		return "";
 	}
 	
@@ -31,7 +32,7 @@ class A {
 		int v;
 		v = 3;
 		this.v = "string value";
-/*		{
+		{
 			boolean v;
 			v = true;
 			{
@@ -47,9 +48,9 @@ class A {
 				v = bObj.cField.arr[0];
 			}
 		}
-		v = args.length;
+		//v = args.length;
 		v = C.sfunc("Hello");
-*/	}
+	}
 
 	string v;
 }
