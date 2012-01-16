@@ -142,8 +142,13 @@ public class TypeTable {
 		} else {
 			throw new SemanticError(type.getLine(),"Something went horribly wrong!!!");
 		}
+		
+		if(result == null)
+			throw new SemanticError(type.getLine(),"No such type: " + type.getName());
+			
 		if ( type.getDimension() > 0 )
 			return arrayType(result, type.getDimension());
+		
 		return result;
 	}
 	
