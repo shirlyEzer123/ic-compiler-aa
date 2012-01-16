@@ -61,7 +61,7 @@ public class Compiler {
 				dumpSymTab = true;
 			}
 		}
-		
+
 		// Parse the library file
 		FileReader libFile = null;
 		try {
@@ -109,10 +109,7 @@ public class Compiler {
 			// Build symbol tables
 			SymbolTableConstructor stc = new SymbolTableConstructor();
 			SymbolTable st = (SymbolTable) stc.visit(root);
-			if(dumpSymTab){
-				st.printSymbolTable("Global",st, args[0], printLibrary);
-				TypeTable.printTable(args[0], printLibrary);
-			}
+
 			
 			// Check for single main
 			SingleMainMethod smm = new SingleMainMethod();
@@ -125,6 +122,12 @@ public class Compiler {
 			// Type check
 			TypeCheck tc = new TypeCheck();
 			tc.visit(root);
+			
+			//prints the symbol and check tables
+			if(dumpSymTab){
+				st.printSymbolTable("Global",st, args[0], printLibrary);
+				TypeTable.printTable(args[0], printLibrary);
+			}
 			
 			// Check that a non-void method has return on all execution paths
 			MethodReturnCheck mrc = new MethodReturnCheck();
