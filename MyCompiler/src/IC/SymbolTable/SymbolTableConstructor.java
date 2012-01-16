@@ -525,7 +525,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			location.getLocation().accept(this);
 			SymbolTable leftSymTab = location.getLocation().getEnclosingScope();
 			if ( leftSymTab == null ) {
-				return null;
+				errorHandler(new SemanticError(location.getLine(), "Cannot find field in external location"));
 			}
 			locSym = location.getLocation().getEnclosingScope().lookup(location.getName());
 		} else {
