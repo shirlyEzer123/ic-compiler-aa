@@ -64,7 +64,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	private static int BlockNumber = 0;
 	
 	private void errorHandler(SemanticError e){
-		System.out.println(e.getMessage());
+		System.err.println(e.getMessage());
 		System.exit(1);
 	}
 	
