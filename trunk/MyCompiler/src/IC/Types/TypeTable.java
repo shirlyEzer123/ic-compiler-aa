@@ -173,9 +173,10 @@ public class TypeTable {
 			}
 			return uniqueMethodTypes.get(mt.getName());
 		} catch (SemanticError e) {
-			System.err.println("Something went horribly wrong..");
-			return null;
+			System.err.println(e.getMessage());
+			System.exit(1);
 		}
+		return null;
 	}
 
 	/**
