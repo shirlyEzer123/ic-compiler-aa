@@ -16,6 +16,7 @@ import IC.SemanticChecks.TypeCheck;
 import IC.SymbolTable.SymbolTable;
 import IC.SymbolTable.SymbolTableConstructor;
 import IC.Types.TypeTable;
+import IC.lir.Translator;
 import java_cup.runtime.Symbol;
 import IC.AST.Library;
 import IC.AST.PrettyPrinter;
@@ -132,6 +133,12 @@ public class Compiler {
 			// Check that a non-void method has return on all execution paths
 			MethodReturnCheck mrc = new MethodReturnCheck();
 			mrc.checkMethodsReturn(root);
+			
+			// Create LIR code
+			Translator tr = new Translator();
+			String lir = ""  + tr.visit(root);
+			// TODO if runtime flage --prit-lir etc.
+			System.out.println(lir);
 			
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());

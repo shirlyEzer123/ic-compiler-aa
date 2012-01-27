@@ -1,31 +1,12 @@
 class A {
-	void testA()
-	{
-		A[] a;
-		a[0].foo(); 
-		B b;
-		x = 3;
-	}
-	
-	void foo() {}
-	int x;
-	static void f()
-	{
-		//x = 3;
-		B.sf();
-		//test();
-		//C.x();
-	}
+  static void main(string[] args) {
+  }
+  
+  void foo() { return; }
 }
 
-class B extends A {
-	void test()
-	{
-		A a;
-		a.foo();
-		x = 3;
-		testA(x);
+class B {
+	int bar() {
+		return 17;
 	}
-	
-	static void sf() {}
 }
