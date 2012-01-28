@@ -1,6 +1,7 @@
 package IC.SemanticChecks;
 
 import IC.AST.ICClass;
+import IC.AST.Method;
 import IC.AST.Program;
 import IC.AST.StaticMethod;
 import IC.SymbolTable.Kind;
@@ -34,8 +35,13 @@ public class SingleMainMethod {
 					if ( mainFound  )
 						throw new SemanticError(mainSym.getLine(),
 								"program can only contain one 'main' method");
-					else
+					else {
 						mainFound = true;
+						for ( Method m : icClass.getMethods() ) { 
+							if ( m.getName().equals("main"))
+								m.setProgramMain(true);
+						}
+					}
 				}
 			}
 		}

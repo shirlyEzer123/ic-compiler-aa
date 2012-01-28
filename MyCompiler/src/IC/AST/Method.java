@@ -12,6 +12,8 @@ public abstract class Method extends ASTNode {
 	protected Type type;
 
 	protected String name;
+	
+	private boolean isProgramMain = false;
 
 	protected List<Formal> formals;
 
@@ -52,5 +54,13 @@ public abstract class Method extends ASTNode {
 
 	public List<Statement> getStatements() {
 		return statements;
+	}
+
+	public boolean isProgramMain() {
+		return isProgramMain;
+	}
+
+	public void setProgramMain(boolean isProgramMain) {
+		this.isProgramMain = isProgramMain;
 	}
 }
