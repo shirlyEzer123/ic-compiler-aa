@@ -13,7 +13,6 @@ public class Symbol {
 	private Kind kind;
 	private boolean isStatic = false;
 	private boolean unresolved = false;
-//	private SymbolTable relatedSymTab = null;
 	private int line;
 	
 	public Symbol(String id, Type type, Kind kind, int line) {
@@ -128,4 +127,5 @@ public class Symbol {
 	public void setLine(int line) {
 		this.line = line;
 	}
+
 }

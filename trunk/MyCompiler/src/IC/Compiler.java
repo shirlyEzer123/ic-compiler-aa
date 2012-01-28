@@ -2,6 +2,7 @@ package IC;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Map;
 
 import IC.Parser.LexicalError;
 import IC.Parser.LibraryParser;
@@ -16,6 +17,7 @@ import IC.SemanticChecks.TypeCheck;
 import IC.SymbolTable.SymbolTable;
 import IC.SymbolTable.SymbolTableConstructor;
 import IC.Types.TypeTable;
+import IC.lir.StringMapper;
 import IC.lir.Translator;
 import java_cup.runtime.Symbol;
 import IC.AST.Library;
@@ -134,9 +136,13 @@ public class Compiler {
 			MethodReturnCheck mrc = new MethodReturnCheck();
 			mrc.checkMethodsReturn(root);
 			
+			// Generate string table
+			StringMapper sm = new StringMapper();
+			sm.visit(root);
+
 			// Create LIR code
-			Translator tr = new Translator();
-			String lir = ""  + tr.visit(root);
+			Translator tr = new Translator(StringMapper.getStringMap());
+			String lir = ""  + StringMapper.stringMapText() + tr.visit(root);
 			// TODO if runtime flage --prit-lir etc.
 			System.out.println(lir);
 			

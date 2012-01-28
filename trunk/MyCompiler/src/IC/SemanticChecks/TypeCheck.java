@@ -390,6 +390,7 @@ public class TypeCheck implements Visitor {
 			if (t1 == TypeTable.intType && t2 == TypeTable.intType) {
 				return TypeTable.intType;
 			} else if (t1 == TypeTable.stringType && t2 == TypeTable.stringType) {
+				binaryOp.setStrCat(true);
 				return TypeTable.stringType;
 			} else {
 				binaryOpError(binaryOp, t1, t2);

@@ -9,6 +9,8 @@ import IC.BinaryOps;
  */
 public class MathBinaryOp extends BinaryOp {
 
+	private boolean isStrCat = false;
+
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
 	}
@@ -25,6 +27,14 @@ public class MathBinaryOp extends BinaryOp {
 	 */
 	public MathBinaryOp(Expression operand1, BinaryOps operator, Expression operand2) {
 		super(operand1, operator, operand2);
+	}
+
+	public void setStrCat(boolean b) {
+		isStrCat  = b;
+	}
+	
+	public boolean isStrCat() {
+		return isStrCat;
 	}
 
 }
