@@ -264,14 +264,30 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(LocalVariable localVariable) {
-		// TODO Auto-generated method stub
-		return null;
+		String lir = "";
+		if ( localVariable.hasInitValue() ) {
+			// Evaluate the init value
+			lir += localVariable.getInitValue().accept(this);
+			lir += "Move " + curMaxReg() + ", " + localVariable.getName() + "\n";
+		}
+		return lir;
 	}
 
 	@Override
 	public Object visit(VariableLocation location) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		// We need to know if this is lvalue or rvalue
+		// is it  "x = ..." (lvalue)
+		// or     "... = x" (rvalue)
+		// 
+		// Maybe use 2 functions?
+		
+		if ( location.isExternal() ) {
+			// TODO
+			return null;
+		} else {
+			return location.getName();
+		}
 	}
 
 	@Override
@@ -327,11 +343,11 @@ public class Translator implements Visitor {
 		
 		// add runtime divide by zero check
 		if ( binaryOp.getOperator() == BinaryOps.DIVIDE ) {
-			binaryLir += "__checkZero(" + secReg + ")\n";
+			binaryLir += "Library __checkZero(" + secReg + ")\n";
 		}
 		
 		if ( binaryOp.isStrCat() ) {
-			binaryLir += "__stringCat(" + firstReg  + "," + secReg + "), " + firstReg + "\n";
+			binaryLir += "Library __stringCat(" + firstReg  + "," + secReg + "), " + firstReg + "\n";
 		}
 		else {
 			binaryLir += binaryOp.getOperator().getLirOp()  + " " + secReg + ", " + firstReg  + "\n";
