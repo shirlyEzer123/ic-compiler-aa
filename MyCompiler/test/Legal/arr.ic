@@ -1,0 +1,9 @@
+class A {
+	static void main ( string[] args ) {
+		int[] arr = new int[5];
+		int x = arr.length;
+		Library.printi(arr[3]);
+		Library.print(" ");
+		Library.printi(x);
+	}
+}
