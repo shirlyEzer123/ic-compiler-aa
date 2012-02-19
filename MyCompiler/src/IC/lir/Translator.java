@@ -168,6 +168,10 @@ public class Translator implements Visitor {
 	public Object visit(Assignment assignment) {
 		String resReg = curMaxReg();
 		String assignemntLir = "" + assignment.getExp().accept(this);
+//		maxReg++;
+//		assignemntLir += prepareLval(assignment.getVariable());
+//		maxReg--; // TODO
+		assignment.getVariable().setLvalue(true);
 		String locTR = "" + assignment.getVariable().accept(this);
 		assignemntLir += "Move " + resReg + ", " + locTR + "\n";
 		
@@ -286,13 +290,45 @@ public class Translator implements Visitor {
 			// TODO
 			return null;
 		} else {
-			return location.getName();
+			if ( location.isLvalue() )
+				return location.getName();
+			else {
+				String lir = "Move " + location.getName() + ", " + curMaxReg() + "\n";
+				return lir;
+			}
 		}
 	}
 
 	@Override
 	public Object visit(ArrayLocation location) {
-		// TODO Auto-generated method stub
+		if ( location.isLvalue() ) {
+			// TODO
+		} else {
+			
+			// TODO RunTime checks!
+			
+			String lir = "";
+			// Set R_T to contain the result
+			String resReg = curMaxReg();
+			
+			// index to R_T+1
+			maxReg++;
+			String indexReg = curMaxReg();
+			lir += location.getIndex().accept(this);
+			
+			// array to R_T+2
+			maxReg++;
+			String arrReg = curMaxReg();
+			lir += location.getArray().accept(this);
+			
+			// Write result to target register
+			lir += "MoveArray " + arrReg + "[" + indexReg + "], " + resReg + "\n"; 
+			
+			maxReg -= 2;
+			
+			return lir;
+			
+		}
 		return null;
 	}
 

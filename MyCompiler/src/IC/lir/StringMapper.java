@@ -189,7 +189,8 @@ public class StringMapper implements Visitor {
 
 	@Override
 	public Object visit(VirtualCall call) {
-		call.getLocation().accept(this);
+		if(call.isExternal())
+			call.getLocation().accept(this);
 		
 		for ( Expression e : call.getArguments() )
 			e.accept(this);

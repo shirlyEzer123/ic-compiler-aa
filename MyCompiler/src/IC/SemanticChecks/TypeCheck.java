@@ -251,7 +251,7 @@ public class TypeCheck implements Visitor {
 															// because of scope
 															// check
 		} else {
-			locSym = getCurrentScope().lookup(location.getName());// will not be
+			locSym = location.getEnclosingScope().lookup(location.getName());// will not be
 																	// null
 																	// because
 																	// of scope
@@ -461,7 +461,8 @@ public class TypeCheck implements Visitor {
 	@Override
 	public Object visit(MathUnaryOp unaryOp) {
 		Type t = (Type) unaryOp.getOperand().accept(this);
-		if(unaryOp.getOperator() == UnaryOps.UMINUS){
+		if( ( unaryOp.getOperator() == UnaryOps.UMINUS ) &&
+			( t == TypeTable.intType                   )    ) {
 			return TypeTable.intType;
 		}
 		else{
@@ -478,7 +479,8 @@ public class TypeCheck implements Visitor {
 	@Override
 	public Object visit(LogicalUnaryOp unaryOp) {
 		Type t = (Type) unaryOp.getOperand().accept(this);
-		if(unaryOp.getOperator() == UnaryOps.LNEG){
+		if( ( unaryOp.getOperator() == UnaryOps.LNEG ) &&
+			( t == TypeTable.boolType                )    ) {
 			return TypeTable.boolType;
 		}
 		else{
