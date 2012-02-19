@@ -108,18 +108,3 @@ Type Table: ..\test\LegalPrograms\type_expressions.ic
 	30: Method type: {int[] -> string}
 	31: Method type: {int -> int}
 
-_Check_isint:
-Return Rdummy
-_Check_isstr:
-Return Rdummy
-_Check_isbool:
-Return Rdummy
-_Check_isA:
-Return Rdummy
-_Check_isB:
-Return Rdummy
-_Check_isC:
-Return Rdummy
-_App_main:
-nullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullReturn Rdummy
-

@@ -103,21 +103,3 @@ Type Table: ..\test\LegalPrograms\scope_demonstration.ic
 	26: Method type: {int[] -> string}
 	27: Method type: {int -> int}
 
-_A_main:
-nullMove 3, R2
-Move R1, null
-nullnullMove R2, null
-nullMove R3, null
-Return Rdummy
-_A_aFunc:
-nullnullreturn R4
-_A_vfunc:
-nullMove 3, R5
-Move R4, null
-nullMove R5, null
-nullnullMove R6, null
-Return Rdummy
-_C_sfunc:
-Move 5, R7
-return R7
-
