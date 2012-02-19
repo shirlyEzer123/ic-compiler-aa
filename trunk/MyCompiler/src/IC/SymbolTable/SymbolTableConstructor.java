@@ -534,8 +534,9 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		}
 		if ( locSym == null )
 			errorHandler(new SemanticError(location.getLine(), "location not found: " + location.getName()));
+		location.setEnclosingScope(getCurrentTable().lookForScope(locSym));
 		SymbolTable locationTypeSymTab = TypeTable.getClassSymTab(locSym.getType().getName());
-		location.setEnclosingScope(locationTypeSymTab);
+		//location.setEnclosingScope(locationTypeSymTab);
 		Type t = locSym.getType();
 		while ( t instanceof ArrayType ) 
 			t = ((ArrayType)t).getElemType();
@@ -654,6 +655,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	@Override
 	public Object visit(NewArray newArray) {
 		newArray.setEnclosingScope(getCurrentTable());
+		newArray.getSize().accept(this);
 		ArrayType arrt = null;
 		try {
 			arrt = TypeTable.arrayType(TypeTable.astType(newArray.getType()), newArray.getType().getDimension());

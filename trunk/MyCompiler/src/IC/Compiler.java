@@ -143,7 +143,7 @@ public class Compiler {
 			// Create LIR code
 			Translator tr = new Translator(StringMapper.getStringMap());
 			String lir = ""  + StringMapper.stringMapText() + tr.visit(root);
-			// TODO if runtime flage --prit-lir etc.
+//			// TODO if runtime flage --prit-lir etc.
 			System.out.println(lir);
 			
 		} catch (SyntaxError e) {

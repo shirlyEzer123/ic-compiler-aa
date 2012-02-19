@@ -60,6 +60,16 @@ public class SymbolTable {
 			return null;
 	}
 
+	public SymbolTable lookForScope(Symbol sym) {
+		if(entries.containsKey(sym.getId()))
+			return this;
+		if(parentSymbolTable != null)
+			return parentSymbolTable.lookForScope(sym);
+		else
+			return null;
+	}
+	
+	
 	/**
 	 * Looks for a symbol in the specific symbol table (not in hierarchy)
 	 * @param ID the ID of the symbol to look
@@ -253,6 +263,7 @@ public class SymbolTable {
 	public void setKind(Kind kind) {
 		this.kind = kind;
 	}
+
 
 
 }
