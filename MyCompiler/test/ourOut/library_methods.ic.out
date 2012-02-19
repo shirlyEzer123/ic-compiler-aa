@@ -54,3 +54,6 @@ Type Table: ..\test\LegalPrograms\library_methods.ic
 	20: Method type: {int[] -> string}
 	21: Method type: {int -> int}
 
+_A_main:
+nullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullReturn Rdummy
+
