@@ -1,5 +1,7 @@
 package IC.lir;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import IC.BinaryOps;
@@ -9,6 +11,7 @@ import IC.AST.Assignment;
 import IC.AST.Break;
 import IC.AST.CallStatement;
 import IC.AST.Continue;
+import IC.AST.Expression;
 import IC.AST.ExpressionBlock;
 import IC.AST.Field;
 import IC.AST.Formal;
@@ -142,7 +145,7 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(LibraryMethod method) {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
@@ -180,8 +183,7 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(CallStatement callStatement) {
-		// TODO Auto-generated method stub
-		return null;
+		return callStatement.getCall().accept(this);
 	}
 
 	@Override
@@ -266,7 +268,7 @@ public class Translator implements Visitor {
 		return lir;
 	}
 
-	@Override
+	@Override	
 	public Object visit(LocalVariable localVariable) {
 		String lir = "";
 		if ( localVariable.hasInitValue() ) {
@@ -291,8 +293,10 @@ public class Translator implements Visitor {
 			return null;
 		} else {
 			if ( location.isLvalue() )
+				// variable is assignment target
 				return location.getName();
 			else {
+				// variable is a part of an expression
 				String lir = "Move " + location.getName() + ", " + curMaxReg() + "\n";
 				return lir;
 			}
@@ -301,13 +305,15 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(ArrayLocation location) {
+			// TODO RunTime checks:
+			//		1. Null dereference
+			//		2. index < array size
+			
 		if ( location.isLvalue() ) {
 			// TODO
 		} else {
-			
-			// TODO RunTime checks!
-			
 			String lir = "";
+
 			// Set R_T to contain the result
 			String resReg = curMaxReg();
 			
@@ -334,8 +340,39 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(StaticCall call) {
-		// TODO Auto-generated method stub
-		return null;
+		String lir = "";
+		int startMax = maxReg;
+
+		String resReg = curMaxReg();
+		
+		// R_T+1, R_T+2, ...   <--   evaluate arguments
+		List<String> paramRegs = new ArrayList<>(call.getArguments().size());
+		for ( Expression exp : call.getArguments() ) {
+			maxReg++;
+			paramRegs.add(curMaxReg());
+			lir += exp.accept(this);
+		}
+			
+		// R_T <- call the method
+		if ( call.getClassName().equals("Library") ) {
+			lir += "Library __" + call.getName() + "( ";
+			for ( int i = 0; i < paramRegs.size()-1; i++ )
+				lir += paramRegs.get(i) + ",";
+			if ( paramRegs.size() > 0 )
+				lir += paramRegs.get(paramRegs.size()-1);
+		} else {
+			lir += "StaticCall _" + call.getClassName() + "_" + call.getName() + "(";
+//			for ( int i = 0; i < paramRegs.size()-1; i++ )
+//				lir += call.getparamRegs.get(i) + ",";
+//			if ( paramRegs.size() > 0 )
+//				lir += paramRegs.get(paramRegs.size()-1);
+			// TODO create code of the form param1=R12,param2=R3,...
+		}
+
+		lir += "), " + resReg + "\n";
+			
+		maxReg = startMax;
+		return lir;
 	}
 
 	@Override
@@ -346,8 +383,9 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(This thisExpression) {
-		// TODO Auto-generated method stub
-		return null;
+		String resReg = curMaxReg();
+		String lir = "Move this, " + resReg + "\n";
+		return lir;
 	}
 
 	@Override
@@ -358,14 +396,41 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(NewArray newArray) {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO Add runtime check for index > 0
+		String lir = "";
+		
+		// R_T+1 <- array size
+		maxReg++;
+		String sizeReg = curMaxReg();
+		lir += newArray.getSize().accept(this);
+		maxReg--;
+		
+		// R_T <- new array of size (R_T+1)*4
+		String resReg = curMaxReg();
+		lir += "Mul 4, " + sizeReg + "\n";
+		lir += "Library __allocateArray(" + sizeReg + "), " + resReg + "\n";		
+		
+		return lir;
 	}
 
 	@Override
 	public Object visit(Length length) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		// TODO add runtime checks for null dereference
+		
+		String lir = "";
+		
+		// R_T+1 <- the array
+		maxReg++;
+		String arrReg = curMaxReg();
+		lir += length.getArray().accept(this);
+		maxReg--;
+		
+		// R_T <- array length
+		String resReg = curMaxReg();
+		lir += "ArrayLength " + arrReg + ", " + resReg + "\n";
+		
+		return lir;
 	}
 
 	@Override
