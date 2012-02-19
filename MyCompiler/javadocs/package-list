@@ -1,6 +1,0 @@
-IC
-IC.AST
-IC.Parser
-IC.SemanticChecks
-IC.SymbolTable
-IC.Types
