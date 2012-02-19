@@ -42,6 +42,7 @@ import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.While;
 import IC.SemanticChecks.SemanticError;
+import IC.Types.ArrayType;
 import IC.Types.ClassType;
 import IC.Types.MethodType;
 import IC.Types.Type;
@@ -523,11 +524,11 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		Symbol locSym = null;
 		if ( location.isExternal() ) {
 			location.getLocation().accept(this);
-			SymbolTable leftSymTab = location.getLocation().getEnclosingScope();
+			SymbolTable leftSymTab = location.getLocation().getTypeScope();
 			if ( leftSymTab == null ) {
 				errorHandler(new SemanticError(location.getLine(), "Cannot find field in external location"));
 			}
-			locSym = location.getLocation().getEnclosingScope().lookup(location.getName());
+			locSym = location.getLocation().getTypeScope().lookup(location.getName());
 		} else {
 			locSym = getCurrentTable().lookup(location.getName());
 		}
@@ -535,6 +536,14 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			errorHandler(new SemanticError(location.getLine(), "location not found: " + location.getName()));
 		SymbolTable locationTypeSymTab = TypeTable.getClassSymTab(locSym.getType().getName());
 		location.setEnclosingScope(locationTypeSymTab);
+		Type t = locSym.getType();
+		while ( t instanceof ArrayType ) 
+			t = ((ArrayType)t).getElemType();
+		
+		if ( t instanceof ClassType ) {
+			location.setTypeScope( ((ClassType)t).getSymbolTable() );
+		}
+		
 		return locationTypeSymTab;
 	}
 
@@ -543,6 +552,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		location.setEnclosingScope(getCurrentTable());
 		location.getArray().accept(this);
 		location.getIndex().accept(this);
+		location.setTypeScope(location.getArray().getTypeScope());
 		return null;
 	}
 
@@ -575,6 +585,9 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			errorHandler(new SemanticError(call.getLine(), "Could find static method: " + call.getClassName() + "." +call.getName()));
 		}
 		
+		call.setTypeScope( TypeTable.getClassSymTab(
+				((MethodType)classST.lookup(call.getName())
+						.getType()).getReturnType().getName() ) );
 		return null;
 	}
 
@@ -593,21 +606,28 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			exp.accept(this);
 		
 		// Scope checking
+		SymbolTable declerationTable = null;
 		if ( call.isExternal() ) {
-			SymbolTable classTable = call.getLocation().getEnclosingScope();
-			Symbol methodSym = classTable.lookup(call.getName());
+			declerationTable = call.getLocation().getTypeScope();
+			Symbol methodSym = declerationTable.lookup(call.getName());
 			if ( methodSym == null )
 				getUnresolved().put(call, currentTable);
 			else if ( methodSym.isStatic() ){
 				errorHandler(new SemanticError(call.getLine(), "Cannot call static method: "+call.getName()+", as a virtual method."));				 
 			}
 		} else  {
+			declerationTable = currentTable;
 			Symbol methodSymbol = currentTable.lookup(call.getName());
 			if ( methodSymbol == null )
 				getUnresolved().put(call, currentTable);
 			else if ( methodSymbol.isStatic() ) 
 				errorHandler(new SemanticError(call.getLine(), "Cannot call static method: "+call.getName()+", as a virtual method."));
 		}
+		
+		call.setTypeScope( TypeTable.getClassSymTab(
+				((MethodType)declerationTable.lookup(call.getName())
+						.getType()).getReturnType().getName() ) );
+	
 		return null;
 	}
 
@@ -618,6 +638,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			errorHandler(new SemanticError(thisExpression.getLine(), "'this' object is undefined here"));
 		SymbolTable thisTypeSymTab = TypeTable.getClassSymTab(thisSym.getType().getName()); 
 		thisExpression.setEnclosingScope(thisTypeSymTab);
+		thisExpression.setTypeScope(thisTypeSymTab);
 		return thisTypeSymTab;
 	}
 
@@ -626,16 +647,23 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 		newClass.setEnclosingScope(getCurrentTable());
 		if ( TypeTable.getUserType(newClass.getName()) == null )
 			errorHandler(new SemanticError(newClass.getLine(), "No such type: " + newClass.getName()));
+		newClass.setTypeScope(TypeTable.getUserType(newClass.getName()).getSymbolTable());
 		return null;
 	}
 
 	@Override
 	public Object visit(NewArray newArray) {
 		newArray.setEnclosingScope(getCurrentTable());
+		ArrayType arrt = null;
 		try {
-			TypeTable.arrayType(TypeTable.astType(newArray.getType()), newArray.getType().getDimension());
+			arrt = TypeTable.arrayType(TypeTable.astType(newArray.getType()), newArray.getType().getDimension());
 		} catch (SemanticError e) {
 			errorHandler(e);
+		}
+		while ( arrt.getElemType() instanceof ArrayType )
+			arrt = (ArrayType) arrt.getElemType();
+		if ( arrt.getElemType() instanceof ClassType ) {
+			newArray.setTypeScope( ((ClassType)arrt.getElemType()).getSymbolTable() );
 		}
 		return null;
 	}
@@ -687,6 +715,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 	public Object visit(ExpressionBlock expressionBlock) {
 		expressionBlock.setEnclosingScope(getCurrentTable());
 		expressionBlock.getExpression().accept(this);
+		expressionBlock.setTypeScope(expressionBlock.getExpression().getTypeScope());
 		return null;
 	}
 

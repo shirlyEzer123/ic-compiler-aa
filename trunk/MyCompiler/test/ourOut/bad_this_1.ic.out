@@ -1,4 +1,3 @@
 Parsed ..\test\libic.sig successfully!
 Parsed ..\test\IlegalPrograms\bad_this_1.ic successfully!
 
-semantic error at line 4: 'this' object is undefined here

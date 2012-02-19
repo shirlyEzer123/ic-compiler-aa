@@ -163,7 +163,7 @@ public class Compiler {
 	 * Prints usage information about this application to System.out
 	 */
 	public static void printUsage() {
-		System.out.println("Usage: java IC.Compiler <file.ic> [ -L</path/to/libic.sig> ]");
+		System.err.println("Usage: java IC.Compiler <file.ic> [ -L</path/to/libic.sig> ]");
 	}
 }
 

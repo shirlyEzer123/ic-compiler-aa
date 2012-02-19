@@ -133,3 +133,32 @@ Type Table: ..\test\LegalPrograms\type_methods.ic
 	31: Method type: {int[] -> string}
 	32: Method type: {int -> int}
 
+_A_main:
+nullnullReturn Rdummy
+Return Rdummy
+_A_sfunc:
+nullnullnullMove R1, null
+nullnullMove R2, null
+nullMove R3, null
+nullnullnullreturn R4
+_A_vfunc:
+nullnullnullMove R4, null
+nullnullMove R5, null
+nullMove R6, null
+nullnullnull_A_isint:
+Return Rdummy
+_A_isstr:
+Return Rdummy
+_A_isbool:
+Return Rdummy
+_A_isA:
+Return Rdummy
+_A_isB:
+Return Rdummy
+_A_typechecker:
+nullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullnullreturn R7
+_B_intfunc:
+nullreturn R7
+_B_boolFunc:
+nullreturn R7
+
