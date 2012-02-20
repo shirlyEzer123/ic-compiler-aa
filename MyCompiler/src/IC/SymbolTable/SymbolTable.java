@@ -264,6 +264,8 @@ public class SymbolTable {
 		this.kind = kind;
 	}
 
-
+	public Map<String,Symbol> getEntries(){
+		return entries;
+	}
 
 }

@@ -286,7 +286,7 @@ public class StringMapper implements Visitor {
 		for ( String key : stringMap.keySet() ) {
 			result += stringMap.get(key) + ": " + key + "\n";
 		}
-		return result + "\n";
+		return result;
 	}
 
 }

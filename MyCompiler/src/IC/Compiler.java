@@ -17,6 +17,7 @@ import IC.SemanticChecks.TypeCheck;
 import IC.SymbolTable.SymbolTable;
 import IC.SymbolTable.SymbolTableConstructor;
 import IC.Types.TypeTable;
+import IC.lir.DVCreator;
 import IC.lir.StringMapper;
 import IC.lir.Translator;
 import java_cup.runtime.Symbol;
@@ -140,9 +141,16 @@ public class Compiler {
 			StringMapper sm = new StringMapper();
 			sm.visit(root);
 
+			//Calculate dispatch vector
+			DVCreator.createDV(st);
+			;
+			
 			// Create LIR code
 			Translator tr = new Translator(StringMapper.getStringMap());
-			String lir = ""  + StringMapper.stringMapText() + tr.visit(root);
+			String lir = 
+					StringMapper.stringMapText() + "\n" +
+					DVCreator.printDVS()+ "\n" +
+					tr.visit(root);
 //			// TODO if runtime flage --prit-lir etc.
 			System.out.println(lir);
 			
