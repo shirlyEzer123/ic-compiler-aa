@@ -9,6 +9,7 @@ import IC.ICVoid;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
 import IC.AST.Break;
+import IC.AST.Call;
 import IC.AST.CallStatement;
 import IC.AST.Continue;
 import IC.AST.Expression;
@@ -43,6 +44,10 @@ import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.Visitor;
 import IC.AST.While;
+import IC.SymbolTable.Kind;
+import IC.SymbolTable.MethodSymbol;
+import IC.SymbolTable.SymbolTable;
+import IC.Types.TypeTable;
 
 public class Translator implements Visitor {
 
@@ -124,7 +129,7 @@ public class Translator implements Visitor {
 		// Method Label
 		String methodName = methodLabel(method);
 		if ( method.isProgramMain() )
-			methodName = "_ic_main:\n";
+			methodName = "\n_ic_main:\n";
 		
 		// Method LIR code
 		String methodLir = "";
@@ -169,15 +174,14 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(Assignment assignment) {
-		String resReg = curMaxReg();
+		String expReg = curMaxReg();
 		String assignemntLir = "" + assignment.getExp().accept(this);
-//		maxReg++;
-//		assignemntLir += prepareLval(assignment.getVariable());
-//		maxReg--; // TODO
+		maxReg++;
 		assignment.getVariable().setLvalue(true);
-		String locTR = "" + assignment.getVariable().accept(this);
-		assignemntLir += "Move " + resReg + ", " + locTR + "\n";
+		String lvalLir = "" + assignment.getVariable().accept(this);
+		assignemntLir += String.format(lvalLir, expReg);
 		
+		maxReg--; 
 		return assignemntLir;
 	}
 
@@ -279,23 +283,70 @@ public class Translator implements Visitor {
 		return lir;
 	}
 
+	private String getFieldClass(SymbolTable enclosingScope, String fieldName) {
+		SymbolTable parent = enclosingScope;
+		while ( parent.lookin(fieldName) == null ) {
+			parent = parent.getParentSymbolTable();
+		}
+		return parent.getId();
+	}
+	
 	@Override
 	public Object visit(VariableLocation location) {
 		
-		// We need to know if this is lvalue or rvalue
-		// is it  "x = ..." (lvalue)
-		// or     "... = x" (rvalue)
-		// 
-		// Maybe use 2 functions?
+		if ( ( ! location.isExternal() )  &&
+			 ( location.getEnclosingScope().lookup(location.getName()).
+					getKind() == Kind.FIELD )  ){ // Implicit this
+			String lir = "";
+			String resReg = curMaxReg();
+			
+			// allocate object register and evaluate its value
+			if ( ! location.isLvalue() )
+				maxReg++;
+			String objReg = curMaxReg();
+			lir += "Move this, " + objReg + "\n";
+			
+			// get field offset
+			String className = getFieldClass(location.getEnclosingScope(), location.getName());
+			int offset = DVCreator.getFieldOffset(className, location.getName());
+			
+			if ( location.isLvalue() ) {
+				lir += "MoveField %s, " + objReg + "." + offset + "\n";
+			} else {
+				lir += "MoveField " + objReg + "." + offset + ", " + resReg + "\n";
+				maxReg--;
+			}
+			
+			return lir;
 		
-		if ( location.isExternal() ) {
-			// TODO
-			return null;
+		} else if ( location.isExternal() ) {
+			String lir = "";
+			String resReg = curMaxReg();
+			
+			// allocate object register and evaluate its value
+			if ( ! location.isLvalue() )
+				maxReg++;
+			String objReg = curMaxReg();
+			lir += location.getLocation().accept(this);
+			
+			// get field offset
+			String className = location.getLocation().getTypeScope().getId();
+			int offset = DVCreator.getFieldOffset(className, location.getName());
+			
+			if ( location.isLvalue() ) {
+				lir += "MoveField %s, " + objReg + "." + offset + "\n";
+			} else {
+				lir += "MoveField " + objReg + "." + offset + ", " + resReg + "\n";
+				maxReg--;
+			}
+			
+			return lir;
 		} else {
-			if ( location.isLvalue() )
+			if ( location.isLvalue() ) {
 				// variable is assignment target
-				return location.getName();
-			else {
+				String lir = "Move %s, " + location.getName() + "\n";
+				return lir;
+			} else {
 				// variable is a part of an expression
 				String lir = "Move " + location.getName() + ", " + curMaxReg() + "\n";
 				return lir;
@@ -310,7 +361,23 @@ public class Translator implements Visitor {
 			//		2. index < array size
 			
 		if ( location.isLvalue() ) {
-			// TODO
+			
+			String lir = "";
+			
+			// array to R_T
+			String arrReg = curMaxReg();
+			lir += location.getArray().accept(this);
+
+			// index to R_T+1
+			maxReg++;
+			String indexReg = curMaxReg();
+			lir += location.getIndex().accept(this);
+			
+			// create assignment translation
+			lir += "MoveArray %s, " + arrReg + "[" + indexReg + "]\n";
+			
+			maxReg--;
+			return lir;
 		} else {
 			String lir = "";
 
@@ -335,7 +402,6 @@ public class Translator implements Visitor {
 			return lir;
 			
 		}
-		return null;
 	}
 
 	@Override
@@ -362,11 +428,7 @@ public class Translator implements Visitor {
 				lir += paramRegs.get(paramRegs.size()-1);
 		} else {
 			lir += "StaticCall _" + call.getClassName() + "_" + call.getName() + "(";
-//			for ( int i = 0; i < paramRegs.size()-1; i++ )
-//				lir += call.getparamRegs.get(i) + ",";
-//			if ( paramRegs.size() > 0 )
-//				lir += paramRegs.get(paramRegs.size()-1);
-			// TODO create code of the form param1=R12,param2=R3,...
+			lir += callArgString(call, paramRegs);
 		}
 
 		lir += "), " + resReg + "\n";
@@ -375,10 +437,72 @@ public class Translator implements Visitor {
 		return lir;
 	}
 
+	private String callArgString(Call call, List<String> paramRegs) {
+		String lir = "";
+		String className = getCallClass(call);
+		MethodSymbol mSym = (MethodSymbol) (TypeTable.getClassSymTab(className)
+				.lookup(call.getName()));
+		List<Formal> fl = mSym.getFormals();
+		for ( int i = 0; i < fl.size()-1 ; i++ ) 
+			lir += fl.get(i).getName() + "=" + paramRegs.get(i) + ", ";
+		if ( fl.size() > 0 )
+			lir += fl.get(fl.size()-1).getName() + "=" + paramRegs.get(fl.size()-1);
+		return lir;
+	}
+
+	private String getCallClass(Call call) {
+		if ( call instanceof StaticCall )
+			return ((StaticCall) call).getClassName();
+		else {
+			VirtualCall vcall = (VirtualCall) call;
+			if ( vcall.isExternal() ) {
+				Expression loc = vcall.getLocation();
+				return loc.getTypeScope().getId();
+			} else {
+				SymbolTable parent = call.getEnclosingScope();
+				while ( parent.getKind() != Kind.CLASS )
+					parent = parent.getParentSymbolTable();
+				return parent.getId();
+			}
+		}
+	}
+
 	@Override
 	public Object visit(VirtualCall call) {
-		// TODO Auto-generated method stub
-		return null;
+		String lir = "";
+		int startMax = maxReg;
+
+		String resReg = curMaxReg();
+		
+		// allocate object register and evaluate its value
+		maxReg++;
+		String objReg = curMaxReg();
+		if ( call.isExternal() ) {
+			lir += call.getLocation().accept(this);
+		} else {
+			lir += "Move this, " + objReg + "\n";
+		}
+		
+		// calculate method offset
+		String className = getCallClass(call);
+		int methodOffset = DVCreator.getMethodOffset(className, call.getName());
+		
+		// R_T+2, R_T+3, ...   <--   evaluate arguments
+		List<String> paramRegs = new ArrayList<>(call.getArguments().size());
+		for ( Expression exp : call.getArguments() ) {
+			maxReg++;
+			paramRegs.add(curMaxReg());
+			lir += exp.accept(this);
+		}
+			
+		// R_T <- call the method
+		lir += "VirtualCall " + objReg + "." + methodOffset;
+		lir += "(" + callArgString(call, paramRegs) + "), " + resReg + "\n";
+		
+		// pop used registers
+		maxReg = startMax;
+		
+		return lir;
 	}
 
 	@Override
@@ -604,4 +728,5 @@ public class Translator implements Visitor {
 		return null;
 	}
 
+	
 }
