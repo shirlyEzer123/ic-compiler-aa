@@ -2,6 +2,7 @@ package IC;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.Map;
 
 import IC.Parser.LexicalError;
@@ -53,6 +54,7 @@ public class Compiler {
 		boolean printAST = false;
 		boolean dumpSymTab = false;
 		boolean printLibrary = false;
+		boolean printLir = false;
 		String libFileName = "libic.sig";
 		for ( int i = 1; i < args.length; i++) {
 			if ( ( args[i].charAt(0) == '-') && (args[i].charAt(1) == 'L') ) {
@@ -63,6 +65,9 @@ public class Compiler {
 			}
 			else if (args[i].equals("-dump-symtab") ){
 				dumpSymTab = true;
+			}
+			else if (args[i].equals("-print-lir") ){
+				printLir = true;
 			}
 		}
 
@@ -151,8 +156,13 @@ public class Compiler {
 					StringMapper.stringMapText() + "\n" +
 					DVCreator.printDVS()+ "\n" +
 					tr.visit(root);
-//			// TODO if runtime flage --prit-lir etc.
-			System.out.println(lir);
+			if ( printLir ) {
+				String lirFileName = args[0].replaceAll(".ic$", ".lir");
+				FileWriter fw = new FileWriter(args[0].replaceAll(".ic$", ".lir"));
+				fw.write(lir);
+				fw.close();
+				System.out.println("IR written to " + lirFileName);
+			}
 			
 		} catch (SyntaxError e) {
 			System.err.println("Syntax Error: Line " + e.getLine() + ": " + e.getMessage());

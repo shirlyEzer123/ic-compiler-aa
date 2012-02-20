@@ -79,7 +79,7 @@ public class Translator implements Visitor {
 	@Override
 	public Object visit(Program program) {
 		
-		String lirProgram = "";
+		String lirProgram = runtimeChecksCode;
 		for(ICClass icc : program.getClasses()){
 			lirProgram += icc.accept(this);
 		}
@@ -279,6 +279,8 @@ public class Translator implements Visitor {
 			// Evaluate the init value
 			lir += localVariable.getInitValue().accept(this);
 			lir += "Move " + curMaxReg() + ", " + localVariable.getName() + "\n";
+		} else {
+			lir += "Move 0, " + localVariable.getName() + "\n";
 		}
 		return lir;
 	}
@@ -328,6 +330,7 @@ public class Translator implements Visitor {
 				maxReg++;
 			String objReg = curMaxReg();
 			lir += location.getLocation().accept(this);
+			lir += nullCheckStr(objReg);
 			
 			// get field offset
 			String className = location.getLocation().getTypeScope().getId();
@@ -356,10 +359,6 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(ArrayLocation location) {
-			// TODO RunTime checks:
-			//		1. Null dereference
-			//		2. index < array size
-			
 		if ( location.isLvalue() ) {
 			
 			String lir = "";
@@ -367,11 +366,13 @@ public class Translator implements Visitor {
 			// array to R_T
 			String arrReg = curMaxReg();
 			lir += location.getArray().accept(this);
+			lir += nullCheckStr(arrReg);
 
 			// index to R_T+1
 			maxReg++;
 			String indexReg = curMaxReg();
 			lir += location.getIndex().accept(this);
+			lir += arrayCheckStr(arrReg, indexReg);
 			
 			// create assignment translation
 			lir += "MoveArray %s, " + arrReg + "[" + indexReg + "]\n";
@@ -384,15 +385,17 @@ public class Translator implements Visitor {
 			// Set R_T to contain the result
 			String resReg = curMaxReg();
 			
-			// index to R_T+1
-			maxReg++;
-			String indexReg = curMaxReg();
-			lir += location.getIndex().accept(this);
-			
-			// array to R_T+2
+			// array to R_T+1
 			maxReg++;
 			String arrReg = curMaxReg();
 			lir += location.getArray().accept(this);
+			lir += nullCheckStr(arrReg);
+			
+			// index to R_T+2
+			maxReg++;
+			String indexReg = curMaxReg();
+			lir += location.getIndex().accept(this);
+			lir += arrayCheckStr(arrReg, indexReg);
 			
 			// Write result to target register
 			lir += "MoveArray " + arrReg + "[" + indexReg + "], " + resReg + "\n"; 
@@ -479,6 +482,7 @@ public class Translator implements Visitor {
 		String objReg = curMaxReg();
 		if ( call.isExternal() ) {
 			lir += call.getLocation().accept(this);
+			lir += nullCheckStr(objReg);
 		} else {
 			lir += "Move this, " + objReg + "\n";
 		}
@@ -525,13 +529,13 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(NewArray newArray) {
-		// TODO Add runtime check for index > 0
 		String lir = "";
 		
 		// R_T+1 <- array size
 		maxReg++;
 		String sizeReg = curMaxReg();
 		lir += newArray.getSize().accept(this);
+		lir += sizeCheckStr(sizeReg);
 		maxReg--;
 		
 		// R_T <- new array of size (R_T+1)*4
@@ -545,14 +549,13 @@ public class Translator implements Visitor {
 	@Override
 	public Object visit(Length length) {
 		
-		// TODO add runtime checks for null dereference
-		
 		String lir = "";
 		
 		// R_T+1 <- the array
 		maxReg++;
 		String arrReg = curMaxReg();
 		lir += length.getArray().accept(this);
+		lir += nullCheckStr(arrReg);
 		maxReg--;
 		
 		// R_T <- array length
@@ -573,7 +576,7 @@ public class Translator implements Visitor {
 		
 		// add runtime divide by zero check
 		if ( binaryOp.getOperator() == BinaryOps.DIVIDE ) {
-			binaryLir += "Library __checkZero(" + secReg + ")\n";
+			binaryLir += zeroCheckStr(secReg);
 		}
 		
 		if ( binaryOp.isStrCat() ) {
@@ -728,5 +731,64 @@ public class Translator implements Visitor {
 		return null;
 	}
 
+	private static final String runtimeChecksCode = 
+			"__checkNullRef:" + "\n" +
+			"	# a is a reference" + "\n" +
+			"	Move a, R0" + "\n" +
+			"	Compare 0, R0" + "\n" +
+			"	JumpTrue _rc_error_label1" + "\n" +
+			"	Return Rdummy" + "\n" +
+			"_rc_error_label1:" + "\n" +
+			"	Library __println(re_null_ref_str),Rdummy" + "\n" +
+			"	Library __exit(1),Rdummy" + "\n" +
+			"" + "\n" +
+			"__checkArrayAccess:" + "\n" +
+			"	# a is an arry" + "\n" +
+			"	# i is an index register" + "\n" +
+			"	ArrayLength a, R0" + "\n" +
+			"	Compare i, R0" + "\n" +
+			"	JumpLE _rc_error_label2" + "\n" +
+			"	Move i, R0" + "\n" +
+			"	Compare 0, R0" + "\n" +
+			"	JumpL _rc_error_label2" + "\n" +
+			"	Return Rdummy" + "\n" +
+			"_rc_error_label2:" + "\n" +
+			"	Library __println(re_array_index_str),Rdummy" + "\n" +
+			"	Library __exit(1),Rdummy" + "\n" +
+			"" + "\n" +
+			"__checkSize:" + "\n" +
+			"	# n is an array length" + "\n" +
+			"	Move n, R0" + "\n" +
+			"	Compare 0, R0" + "\n" +
+			"	JumpLE _rc_error_label3" + "\n" +
+			"	Return Rdummy" + "\n" +
+			"_rc_error_label3:" + "\n" +
+			"	Library __println(re_array_alloc_str),Rdummy" + "\n" +
+			"	Library __exit(1),Rdummy" + "\n" +
+			"" + "\n" +
+			"__checkZero:" + "\n" +
+			"	# x is a value that should no be zero" + "\n" +
+			"	Move x, R0" + "\n" +
+			"	Compare 0, R0" + "\n" +
+			"	JumpTrue _rc_error_label4" + "\n" +
+			"	Return Rdummy" + "\n" +
+			"_rc_error_label4:" + "\n" +
+			"	Library __println(re_zero_div_str),Rdummy" + "\n" +
+			"	Library __exit(1),Rdummy" + "\n";
 	
+	private String nullCheckStr(String refReg) {
+		return "StaticCall __checkNullRef(a=" + refReg + "),Rdummy\n";
+	}
+
+	private String arrayCheckStr(String arrReg, String indexReg) {
+		return "StaticCall __checkArrayAccess(a=" + arrReg + ", i=" + indexReg + "),Rdummy\n";
+	}
+
+	private String sizeCheckStr(String sizeReg) {
+		return "StaticCall __checkSize(n=" + sizeReg + "),Rdummy\n";
+	}
+
+	private String zeroCheckStr(String valReg) {
+		return "StaticCall __checkZero(x=" + valReg + "),Rdummy\n";
+	}
 }
