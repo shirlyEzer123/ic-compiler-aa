@@ -355,7 +355,7 @@ public class Translator implements Visitor {
 			
 		// R_T <- call the method
 		if ( call.getClassName().equals("Library") ) {
-			lir += "Library __" + call.getName() + "( ";
+			lir += "Library __" + call.getName() + "(";
 			for ( int i = 0; i < paramRegs.size()-1; i++ )
 				lir += paramRegs.get(i) + ",";
 			if ( paramRegs.size() > 0 )
@@ -390,8 +390,13 @@ public class Translator implements Visitor {
 
 	@Override
 	public Object visit(NewClass newClass) {
-		// TODO Auto-generated method stub
-		return null;
+		String lir = "";
+		String resReg = curMaxReg();
+		String DVName = DVCreator.getDVName(newClass.getName());
+		int sizeOfObject = DVCreator.getNumFields(newClass.getName()) *4 + 4;
+		lir += "Library __allocateObject(" + sizeOfObject + "), " + resReg + "\n";
+		lir += "MoveField " + DVName + ", " + resReg + ".0\n";
+		return lir;
 	}
 
 	@Override
