@@ -5,7 +5,7 @@ re_zero_div_str:    "Runtime Error: Division by zero!"
 
 __checkNullRef:
 	# a is a reference
-	Compare 0, a
+	Compare a, 0
 	JumpE _re_error_label1
 	Return Rdummy
 _re_error_label1:

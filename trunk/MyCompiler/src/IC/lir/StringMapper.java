@@ -292,7 +292,7 @@ public class StringMapper implements Visitor {
 	private static final String runtimeStrings = 
 			"re_null_ref_str:    \"Runtime Error: Null pointer dereference!\"\n" +
 					"re_array_index_str: \"Runtime Error: Array index out of bounds!\"\n" +
-					"re_array_alloc_str: \"Runtime Error: Array allocation with negative array size!\"\n"+
+					"re_array_alloc_str: \"Runtime Error: Array allocation with non-positive array size!\"\n"+
 					"re_zero_div_str:    \"Runtime Error: Division by zero!\"\n";
 
 }
