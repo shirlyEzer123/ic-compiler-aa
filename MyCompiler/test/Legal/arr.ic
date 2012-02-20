@@ -1,9 +1,23 @@
 class A {
+	int x;
 	static void main ( string[] args ) {
-		int[] arr = new int[5];
-		int x = arr.length;
-		Library.printi(arr[3]);
-		Library.print(" ");
-		Library.printi(x);
+		new A().foo();
+	}
+	
+	void foo() {
+		x = 5;
+		A a = new A();
+		a.x = 4;
+		int y = a.x;
+		aField = new A();
+		aField.x = 3;
+		print();
+	}
+	
+	A aField;
+	
+	void print() {
+		Library.printi(aField.x);
+		Library.println("");
 	}
 }

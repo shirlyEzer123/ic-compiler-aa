@@ -239,7 +239,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 			}
 			Symbol fSymbol = null;
 			try {
-				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
+				fSymbol = new MethodSymbol(method.getName(), mt, Kind.METHOD, method.getLine(), method.getFormals());
 				getCurrentTable().insertSymbol(fSymbol);		
 			} catch (SemanticError e) {
 				errorHandler(e);
@@ -302,7 +302,7 @@ public class SymbolTableConstructor implements IC.AST.Visitor{
 							"Cannot overload previous decleration of " + method.getName()));
 			}
 			try {
-				fSymbol = new Symbol(method.getName(), mt, Kind.METHOD, method.getLine());
+				fSymbol = new MethodSymbol(method.getName(), mt, Kind.METHOD, method.getLine(), method.getFormals());
 				fSymbol.setStatic(true);
 				getCurrentTable().insertSymbol(fSymbol);		
 			} catch (SemanticError e) {

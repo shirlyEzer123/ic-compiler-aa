@@ -73,7 +73,7 @@ public class DVCreator {
 		String key = null;
 		while ( parent != null ) {
 			if ( parent.lookin(methodName) != null ) {
-				key = "_" + parent.getId() + "_" + methodName;
+				key = "_" + parent.getId() + "_#" + methodName;
 				break;
 			}
 			parent = parent.getParentSymbolTable();
@@ -85,7 +85,7 @@ public class DVCreator {
 			mto.remove(key);
 		}
 		
-		mto.put("_"+symTab.getId()+"_"+methodName, offset);
+		mto.put("_"+symTab.getId()+"_#"+methodName, offset);
 	}
 	
 	public static String getDV(String className) {
@@ -97,7 +97,8 @@ public class DVCreator {
 		
 		String[] sortedNames = new String[mto.size()];
 		for ( String name : mto.keySet() ) {
-			sortedNames[mto.get(name)] = name;
+			String newName = name.replace("#", "");
+			sortedNames[mto.get(name)] = newName;
 		}
 		
 		for ( int i = 0; i < sortedNames.length-1; i++  )
@@ -115,5 +116,19 @@ public class DVCreator {
 					dvs += getDV(className) + "\n";
 		}
 		return dvs;
+	}
+
+	public static int getMethodOffset(String className, String methodName) {
+		LinkedHashMap<String, Integer> mto = classToMTO.get(className);
+		for ( String label : mto.keySet() ) {
+			if ( label.substring(label.indexOf('#')+1).equals(methodName) )
+				return mto.get(label);
+		}
+		return 0;
+		
+	}
+
+	public static int getFieldOffset(String className, String fieldName) {
+		return classToFTO.get(className).get(fieldName);
 	}
 }
