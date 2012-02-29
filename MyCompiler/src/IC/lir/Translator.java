@@ -145,7 +145,7 @@ public class Translator implements Visitor {
 				methodLir += "Return Rdummy\n";
 		}
 		
-		return methodName + methodLir;
+		return "\n"+methodName + methodLir;
 	}
 
 	@Override
@@ -278,9 +278,9 @@ public class Translator implements Visitor {
 		if ( localVariable.hasInitValue() ) {
 			// Evaluate the init value
 			lir += localVariable.getInitValue().accept(this);
-			lir += "Move " + curMaxReg() + ", " + localVariable.getName() + "\n";
+			lir += "Move " + curMaxReg() + ", " + localVariable.getUID() + "\n";
 		} else {
-			lir += "Move 0, " + localVariable.getName() + "\n";
+			lir += "Move 0, " + localVariable.getUID() + "\n";
 		}
 		return lir;
 	}
@@ -347,11 +347,11 @@ public class Translator implements Visitor {
 		} else {
 			if ( location.isLvalue() ) {
 				// variable is assignment target
-				String lir = "Move %s, " + location.getName() + "\n";
+				String lir = "Move %s, " + location.getLirName() + "\n";
 				return lir;
 			} else {
 				// variable is a part of an expression
-				String lir = "Move " + location.getName() + ", " + curMaxReg() + "\n";
+				String lir = "Move " + location.getLirName() + ", " + curMaxReg() + "\n";
 				return lir;
 			}
 		}
@@ -413,6 +413,8 @@ public class Translator implements Visitor {
 		int startMax = maxReg;
 
 		String resReg = curMaxReg();
+		if ( call.isReturningVoid() )
+			resReg = "Rdummy";
 		
 		// R_T+1, R_T+2, ...   <--   evaluate arguments
 		List<String> paramRegs = new ArrayList<>(call.getArguments().size());
@@ -447,9 +449,9 @@ public class Translator implements Visitor {
 				.lookup(call.getName()));
 		List<Formal> fl = mSym.getFormals();
 		for ( int i = 0; i < fl.size()-1 ; i++ ) 
-			lir += fl.get(i).getName() + "=" + paramRegs.get(i) + ", ";
+			lir += fl.get(i).getLirName() + "=" + paramRegs.get(i) + ", ";
 		if ( fl.size() > 0 )
-			lir += fl.get(fl.size()-1).getName() + "=" + paramRegs.get(fl.size()-1);
+			lir += fl.get(fl.size()-1).getLirName() + "=" + paramRegs.get(fl.size()-1);
 		return lir;
 	}
 
@@ -474,8 +476,10 @@ public class Translator implements Visitor {
 	public Object visit(VirtualCall call) {
 		String lir = "";
 		int startMax = maxReg;
-
+		
 		String resReg = curMaxReg();
+		if ( call.isReturningVoid() )
+			resReg = "Rdummy";
 		
 		// allocate object register and evaluate its value
 		maxReg++;

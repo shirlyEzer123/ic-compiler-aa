@@ -177,7 +177,7 @@ public class TypeCheck implements Visitor {
 			typeError(returnStatement.getLine(), "void functions can't have a return statement");
 		}
 		
-		if(retExpType != funcRetType)
+		if(! retExpType.subtypeof(funcRetType) )
 			typeError(returnStatement.getLine(), "return type needs to be of type " + funcRetType);
 		return null;
 	}
@@ -256,6 +256,7 @@ public class TypeCheck implements Visitor {
 																	// because
 																	// of scope
 																	// check
+			location.setLirName(locSym.getUid());
 		}
 		return locSym.getType();
 	}
@@ -286,6 +287,8 @@ public class TypeCheck implements Visitor {
 		
 		checkMethodType(call, mt);
 		
+		if ( mt.getReturnType().subtypeof(TypeTable.voidType) )
+			call.setReturningVoid(true);
 		return mt.getReturnType();
 	}
 
@@ -313,13 +316,15 @@ public class TypeCheck implements Visitor {
 		
 		checkMethodType(call, mt);
 		
+		if ( mt.getReturnType().subtypeof(TypeTable.voidType) )
+			call.setReturningVoid(true);
 		return mt.getReturnType();
 	}
 
 	/**
 	 * @param call
 	 * @param mt
-	 */
+	 */ 
 	private void checkMethodType(Call call, MethodType mt) {
 		Type[] pts = mt.getParamTypes();
 		List<Expression> args = call.getArguments();

@@ -11,6 +11,8 @@ public class VariableLocation extends Location {
 
 	private String name;
 
+	private String lirName;
+
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
 	}
@@ -53,6 +55,16 @@ public class VariableLocation extends Location {
 
 	public String getName() {
 		return name;
+	}
+
+	public void setLirName(String lirName) {
+		this.lirName = lirName;
+		
+	}
+
+	public String getLirName() {
+		
+		return lirName;
 	}
 
 }

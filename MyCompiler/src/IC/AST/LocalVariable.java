@@ -13,6 +13,8 @@ public class LocalVariable extends Statement {
 
 	private Expression initValue = null;
 
+	private String uid;
+
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
 	}
@@ -61,6 +63,15 @@ public class LocalVariable extends Statement {
 
 	public Expression getInitValue() {
 		return initValue;
+	}
+
+	public void setUID(String uid) {
+		this.uid = uid;
+		
+	}
+
+	public String getUID() {
+		return uid;
 	}
 
 }
