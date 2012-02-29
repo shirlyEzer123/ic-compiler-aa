@@ -1,14 +1,14 @@
 @echo off
 cd classes
-for %%X in (..\test\LegalPrograms\*.ic ..\test\LegalPrograms\*.txt) do ( 
+for %%X in (..\test\Legal\*.ic ..\test\Legal\*.txt) do ( 
 	echo %%X
 	java IC.Compiler "%%X" -L..\test\libic.sig -dump-symtab > "%%X.out"
 )
-for %%X in (..\test\IlegalPrograms\*.ic) do ( 
+for %%X in (..\test\Ilegal\*.ic) do ( 
 	echo %%X
 	java IC.Compiler "%%X" -L..\test\libic.sig -dump-symtab > "%%X.out"
 )
 cd ..\test
-move /Y LegalPrograms\*.out ourOut
-move /Y IlegalPrograms\*.out ourOut
+move /Y Legal\*.out ourOut
+move /Y Ilegal\*.out ourOut
 cd ..
