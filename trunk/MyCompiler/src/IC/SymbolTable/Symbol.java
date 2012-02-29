@@ -14,13 +14,15 @@ public class Symbol {
 	private boolean isStatic = false;
 	private boolean unresolved = false;
 	private int line;
+	private String uid;
 	
-	public Symbol(String id, Type type, Kind kind, int line) {
+	public Symbol(String id, Type type, Kind kind, int line, String uid) {
 		super();
 		this.id = id;
 		this.setType(type);
 		this.setKind(kind);
 		this.setLine(line);
+		this.setUid(uid);
 	}
 
 	/**
@@ -126,6 +128,14 @@ public class Symbol {
 	 */
 	public void setLine(int line) {
 		this.line = line;
+	}
+
+	public String getUid() {
+		return uid;
+	}
+
+	public void setUid(String uid) {
+		this.uid = uid;
 	}
 
 }

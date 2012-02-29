@@ -30,4 +30,9 @@ public class VirtualMethod extends Method {
 		super(type, name, formals, statements);
 	}
 
+	public void setFormalUIDs(List<String> uids) {
+		for ( int i = 0; i < uids.size(); i++ )
+			formals.get(i).setLirName(uids.get(i));
+	}
+
 }

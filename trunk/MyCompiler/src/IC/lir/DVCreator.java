@@ -113,10 +113,12 @@ public class DVCreator {
 		String dvs = "";
 		for ( String className : classToMTO.keySet() ) {
 			if ( !( className.equals("Library") || className.equals("Global") ) )
-					dvs += getDV(className) + "\n";
+					dvs += "# class " + className + "\n# Dispatch vector:\n" + 
+							getDV(className) + "\n" + getOffsetComment(className) + "\n";
 		}
 		return dvs;
 	}
+
 
 	public static int getMethodOffset(String className, String methodName) {
 		LinkedHashMap<String, Integer> mto = classToMTO.get(className);
@@ -128,6 +130,22 @@ public class DVCreator {
 		
 	}
 
+	private static String getOffsetComment(String className) {
+		
+		LinkedHashMap<String, Integer> fto = classToFTO.get(className);
+		if ( fto == null )
+			return "";
+		String comment = "# Field offsets\n";
+		String[] fields = new String[fto.size()];
+		for ( String name : fto.keySet() )
+			fields[fto.get(name)-1] = name;
+
+		for ( int i = 0; i < fto.size(); i++ ) {
+			comment += "# " + (i+1) + ": " + fields[i] + "\n";
+		}
+		return comment;
+	}
+	
 	public static int getFieldOffset(String className, String fieldName) {
 		return classToFTO.get(className).get(fieldName);
 	}

@@ -11,6 +11,8 @@ public class Formal extends ASTNode {
 
 	private String name;
 
+	private String lirName = null;
+
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
 	}
@@ -35,6 +37,14 @@ public class Formal extends ASTNode {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getLirName() {
+		return lirName;
+	}
+
+	public void setLirName(String lirName) {
+		this.lirName = lirName;
 	}
 
 }

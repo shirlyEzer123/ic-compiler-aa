@@ -12,6 +12,8 @@ public abstract class Call extends Expression {
 	private String name;
 
 	private List<Expression> arguments;
+	
+	private boolean returningVoid = false;
 
 	/**
 	 * Constructs a new method call node. Used by subclasses.
@@ -35,6 +37,14 @@ public abstract class Call extends Expression {
 
 	public List<Expression> getArguments() {
 		return arguments;
+	}
+
+	public boolean isReturningVoid() {
+		return returningVoid;
+	}
+
+	public void setReturningVoid(boolean returningVoid) {
+		this.returningVoid = returningVoid;
 	}
 
 }
