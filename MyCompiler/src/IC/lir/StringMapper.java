@@ -43,6 +43,9 @@ import IC.AST.VirtualMethod;
 import IC.AST.Visitor;
 import IC.AST.While;
 
+/**
+ * A visitor that builds the string headlines for LIR.
+ */
 public class StringMapper implements Visitor {
 
 	private static Map<String, String> stringMap = new LinkedHashMap<>();

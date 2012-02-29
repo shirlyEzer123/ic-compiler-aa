@@ -6,6 +6,12 @@ import java.util.List;
 import IC.AST.Formal;
 import IC.Types.MethodType;
 
+/**
+ * A method entry in the symbol table. has access to the method arguments
+ * and their unique IDs.
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class MethodSymbol extends Symbol {
 
 	private List<Formal> formals;

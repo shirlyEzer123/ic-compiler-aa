@@ -8,6 +8,11 @@ import IC.SymbolTable.Kind;
 import IC.SymbolTable.Symbol;
 import IC.SymbolTable.SymbolTable;
 
+/**
+ * Builds the dispatch vector and function offsets data structure
+ * 
+ * @author Asaf Bruner, Aviv Goll
+ */
 public class DVCreator {
 
 	public static Map<String, LinkedHashMap<String, Integer>> classToMTO = new LinkedHashMap<>();
@@ -23,6 +28,9 @@ public class DVCreator {
 		return "_DV_" + name;
 	}
 
+	/**
+	 * for every symbol table populates the appropriate fto, mto data structures.
+	 */
 	@SuppressWarnings("unchecked")
 	public static void createDV(SymbolTable st) {
 		
@@ -63,6 +71,9 @@ public class DVCreator {
 		
 	}
 
+	/**
+	 * populates mto 
+	 */
 	private static void insertToMTO(LinkedHashMap<String, Integer> mto,
 			SymbolTable symTab,String methodName) {
 		
@@ -88,6 +99,9 @@ public class DVCreator {
 		mto.put("_"+symTab.getId()+"_#"+methodName, offset);
 	}
 	
+	/**
+	 * returns a stirng containing the dispatch vector
+	 */
 	public static String getDV(String className) {
 		String res = getDVName(className) + ": [";
 		
@@ -108,7 +122,10 @@ public class DVCreator {
 		res += "]";
 		return res;
 	}
-
+	
+	/**
+	 * prints the dispatch vector
+	 */
 	public static String printDVS() {
 		String dvs = "";
 		for ( String className : classToMTO.keySet() ) {
@@ -120,6 +137,9 @@ public class DVCreator {
 	}
 
 
+	/**
+	 * return the method's offset
+	 */
 	public static int getMethodOffset(String className, String methodName) {
 		LinkedHashMap<String, Integer> mto = classToMTO.get(className);
 		for ( String label : mto.keySet() ) {
@@ -130,6 +150,9 @@ public class DVCreator {
 		
 	}
 
+	/**
+	 * returns a string containing the fields offsets
+	 */
 	private static String getOffsetComment(String className) {
 		
 		LinkedHashMap<String, Integer> fto = classToFTO.get(className);

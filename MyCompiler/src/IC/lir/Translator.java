@@ -48,6 +48,11 @@ import IC.SymbolTable.Kind;
 import IC.SymbolTable.MethodSymbol;
 import IC.SymbolTable.SymbolTable;
 import IC.Types.TypeTable;
+/**
+ * Translate the AST to LIR string.
+ *  
+ * @author Asaf Bruner, Aviv Goll
+ */
 
 public class Translator implements Visitor {
 
