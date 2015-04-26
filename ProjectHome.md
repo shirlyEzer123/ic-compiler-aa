@@ -1,0 +1,1 @@
+This is the solution for exercises in our compilation class: a compiler for the IC language
